@@ -70,8 +70,6 @@ document.addEventListener('DOMContentLoaded', function() {
         sendBtn.disabled = true;
 
         try {
-            loadingModal.show();
-
             const response = await fetch('/chat', {
                 method: 'POST',
                 headers: {
@@ -93,7 +91,6 @@ document.addEventListener('DOMContentLoaded', function() {
             alert('Error processing message: ' + error.message);
             messageInput.value = originalMessage;
         } finally {
-            loadingModal.hide();
             sendBtn.disabled = false;
         }
     }
