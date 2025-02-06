@@ -1,23 +1,42 @@
 import os
 import logging
 from flask import Flask, render_template, request, jsonify
+from flask_sqlalchemy import SQLAlchemy
 from werkzeug.utils import secure_filename
 from utils.openai_helper import process_message
+from datetime import datetime
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
+# Initialize Flask and SQLAlchemy
 app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "default_secret_key")
 
+# Database configuration
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
+
 # Configure upload settings
 UPLOAD_FOLDER = '/tmp'
-ALLOWED_EXTENSIONS = {'txt'}
+ALLOWED_EXTENSIONS = {'txt', 'pdf', 'doc', 'docx'}  # Extended file support
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# In-memory storage for chat history
-chat_history = []
+class ChatMessage(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    role = db.Column(db.String(20), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def to_dict(self):
+        return {
+            'role': self.role,
+            'content': self.content,
+            'timestamp': self.timestamp.isoformat()
+        }
+
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -80,20 +99,33 @@ def chat():
             logger.error("No message provided")
             return jsonify({'error': 'No message provided'}), 400
 
-        # Add user message to history
-        chat_history.append({'role': 'user', 'content': message})
+        # Create and save user message
+        user_message = ChatMessage(role='user', content=message)
+        db.session.add(user_message)
+        db.session.commit()
 
         try:
+            # Get recent chat history from database
+            chat_history = [msg.to_dict() for msg in 
+                          ChatMessage.query.order_by(ChatMessage.timestamp.desc()).limit(10).all()]
+            chat_history.reverse()  # Most recent last
+
             response = process_message(message, chat_history)
-            chat_history.append({'role': 'assistant', 'content': response})
+
+            # Save assistant's response
+            assistant_message = ChatMessage(role='assistant', content=response)
+            db.session.add(assistant_message)
+            db.session.commit()
 
             return jsonify({
                 'response': response,
-                'history': chat_history
+                'history': [msg.to_dict() for msg in 
+                           ChatMessage.query.order_by(ChatMessage.timestamp).all()]
             })
+
         except Exception as e:
             logger.error(f"OpenAI processing error: {str(e)}")
-            chat_history.pop()  # Remove the user message from history if processing failed
+            db.session.rollback()  # Rollback the user message on error
             return jsonify({'error': str(e)}), 500
 
     except Exception as e:
@@ -102,4 +134,9 @@ def chat():
 
 @app.route('/history', methods=['GET'])
 def get_history():
-    return jsonify({'history': chat_history})
+    messages = ChatMessage.query.order_by(ChatMessage.timestamp).all()
+    return jsonify({'history': [msg.to_dict() for msg in messages]})
+
+# Create database tables
+with app.app_context():
+    db.create_all()
