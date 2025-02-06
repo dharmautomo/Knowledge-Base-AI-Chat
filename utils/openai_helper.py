@@ -1,6 +1,7 @@
 import os
 import logging
 from openai import OpenAI
+import time
 
 # the newest OpenAI model is "gpt-4o" which was released May 13, 2024.
 # do not change this unless explicitly requested by the user
@@ -8,9 +9,10 @@ OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 if not OPENAI_API_KEY:
     raise ValueError("OPENAI_API_KEY environment variable is not set")
 
-client = OpenAI(api_key=OPENAI_API_KEY)
+client = OpenAI(api_key=OPENAI_API_KEY, timeout=30.0)  # Set 30 second timeout
 
 def process_message(message, history):
+    start_time = time.time()
     try:
         messages = [
             {"role": "system", "content": "You are a helpful AI assistant that helps users understand and analyze text content."}
@@ -35,8 +37,14 @@ def process_message(message, history):
             temperature=0.7,
         )
 
+        elapsed_time = time.time() - start_time
+        logging.debug(f"OpenAI API request completed in {elapsed_time:.2f} seconds")
+
         return response.choices[0].message.content
 
     except Exception as e:
-        logging.error(f"OpenAI API error: {str(e)}")
+        elapsed_time = time.time() - start_time
+        logging.error(f"OpenAI API error after {elapsed_time:.2f} seconds: {str(e)}")
+        if elapsed_time >= 30:
+            raise Exception("Request timed out. Please try again.")
         raise Exception(f"Error processing message: {str(e)}")

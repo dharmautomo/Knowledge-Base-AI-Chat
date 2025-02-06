@@ -27,16 +27,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
         try {
             loadingModal.show();
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+            uploadBtn.disabled = true;
 
-            const response = await fetch('/upload', {
-                method: 'POST',
-                body: formData,
-                signal: controller.signal
-            });
+            const response = await Promise.race([
+                fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                }),
+                new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error('Request timed out')), 30000)
+                )
+            ]);
 
-            clearTimeout(timeoutId);
             const data = await response.json();
 
             if (response.ok) {
@@ -45,13 +47,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 throw new Error(data.error || 'Error uploading file');
             }
         } catch (error) {
-            if (error.name === 'AbortError') {
-                alert('Request timed out. Please try again.');
-            } else {
-                alert('Error: ' + error.message);
-            }
+            console.error('Upload error:', error);
+            alert(error.message === 'Request timed out' 
+                ? 'Upload timed out. Please try again.' 
+                : 'Error: ' + error.message);
         } finally {
             loadingModal.hide();
+            uploadBtn.disabled = false;
             fileInput.value = '';
         }
     });
@@ -69,23 +71,25 @@ document.addEventListener('DOMContentLoaded', function() {
         const message = messageInput.value.trim();
         if (!message) return;
 
+        const originalMessage = message;
         try {
             loadingModal.show();
             messageInput.value = '';
+            sendBtn.disabled = true;
 
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+            const response = await Promise.race([
+                fetch('/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ message })
+                }),
+                new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error('Request timed out')), 30000)
+                )
+            ]);
 
-            const response = await fetch('/chat', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ message }),
-                signal: controller.signal
-            });
-
-            clearTimeout(timeoutId);
             const data = await response.json();
 
             if (response.ok) {
@@ -94,14 +98,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 throw new Error(data.error || 'Error sending message');
             }
         } catch (error) {
-            if (error.name === 'AbortError') {
-                alert('Request timed out. Please try again.');
-            } else {
-                alert('Error: ' + error.message);
-            }
-            messageInput.value = message; // Restore the message if there was an error
+            console.error('Chat error:', error);
+            alert(error.message === 'Request timed out' 
+                ? 'Message processing timed out. Please try again.' 
+                : 'Error: ' + error.message);
+            messageInput.value = originalMessage; // Restore the message if there was an error
         } finally {
             loadingModal.hide();
+            sendBtn.disabled = false;
         }
     }
 
@@ -112,6 +116,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (response.ok) {
                 updateChatDisplay(data.history);
+            } else {
+                throw new Error(data.error || 'Error loading history');
             }
         } catch (error) {
             console.error('Error loading chat history:', error);
