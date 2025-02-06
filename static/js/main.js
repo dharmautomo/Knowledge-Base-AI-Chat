@@ -5,10 +5,20 @@ document.addEventListener('DOMContentLoaded', function() {
     const sendBtn = document.getElementById('sendBtn');
     const chatContainer = document.getElementById('chatContainer');
     const resetBtn = document.getElementById('resetBtn');
-    const loadingModal = new bootstrap.Modal(document.getElementById('loadingModal'));
+    const loadingOverlay = document.getElementById('loadingOverlay');
 
     // Load chat history on page load
     loadChatHistory();
+
+    function showLoading() {
+        loadingOverlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function hideLoading() {
+        loadingOverlay.classList.remove('active');
+        document.body.style.overflow = '';
+    }
 
     // Reset Chat Handler
     resetBtn.addEventListener('click', async () => {
@@ -17,10 +27,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         try {
-            loadingModal.show();
+            // Disable all interactive elements
             resetBtn.disabled = true;
             messageInput.disabled = true;
             sendBtn.disabled = true;
+            showLoading();
 
             const response = await fetch('/reset', {
                 method: 'POST',
@@ -43,7 +54,7 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Reset error:', error);
             alert('Error resetting chat: ' + error.message);
         } finally {
-            loadingModal.hide();
+            hideLoading();
             resetBtn.disabled = false;
             messageInput.disabled = false;
             sendBtn.disabled = false;
@@ -67,7 +78,7 @@ document.addEventListener('DOMContentLoaded', function() {
         formData.append('file', file);
 
         try {
-            loadingModal.show();
+            showLoading();
             uploadBtn.disabled = true;
 
             const response = await fetch('/upload', {
@@ -87,7 +98,7 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Upload error:', error);
             alert('Error uploading file: ' + error.message);
         } finally {
-            loadingModal.hide();
+            hideLoading();
             uploadBtn.disabled = false;
             fileInput.value = '';
         }
