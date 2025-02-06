@@ -3,7 +3,7 @@ import logging
 from flask import Flask, render_template, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.utils import secure_filename
-from utils.openai_helper import process_message
+from utils.openai_helper import process_message, process_document
 from datetime import datetime
 
 # Configure logging
@@ -74,6 +74,10 @@ def upload_file():
             with open(filepath, 'r', encoding='utf-8') as f:
                 content = f.read()
                 logger.debug(f"File content read, length: {len(content)} characters")
+
+            # Process the document content
+            num_chunks = process_document(content)
+            logger.debug(f"Document processed into {num_chunks} chunks")
 
             # Clean up the file after reading
             os.remove(filepath)

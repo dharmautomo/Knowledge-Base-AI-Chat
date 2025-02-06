@@ -2,14 +2,22 @@ import os
 import logging
 from openai import OpenAI
 import time
+from utils.text_processor import TextProcessor
 
-# the newest OpenAI model is "gpt-4o" which was released May 13, 2024.
-# do not change this unless explicitly requested by the user
+# Configure logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 if not OPENAI_API_KEY:
     raise ValueError("OPENAI_API_KEY environment variable is not set")
 
-client = OpenAI(api_key=OPENAI_API_KEY, timeout=30.0)  # Set 30 second timeout
+client = OpenAI(api_key=OPENAI_API_KEY, timeout=30.0)
+text_processor = TextProcessor()
+
+def process_document(text):
+    """Process an uploaded document and store its vectors."""
+    return text_processor.process_document(text)
 
 def process_message(message, history):
     start_time = time.time()
@@ -17,6 +25,14 @@ def process_message(message, history):
         messages = [
             {"role": "system", "content": "You are a helpful AI assistant that helps users understand and analyze text content."}
         ]
+
+        # Get relevant context from vector store
+        context = text_processor.get_relevant_context(message)
+        if context:
+            messages.append({
+                "role": "system",
+                "content": f"Here is relevant context from the uploaded documents:\n{context}"
+            })
 
         # Add history context
         for entry in history[-5:]:  # Only use last 5 messages for context
@@ -28,23 +44,23 @@ def process_message(message, history):
         # Add current message
         messages.append({"role": "user", "content": message})
 
-        logging.debug(f"Sending request to OpenAI API with {len(messages)} messages")
+        logger.debug(f"Sending request to OpenAI API with {len(messages)} messages")
 
         response = client.chat.completions.create(
-            model="gpt-4o",
+            model="gpt-4",  # Fixed model name
             messages=messages,
             max_tokens=500,
             temperature=0.7,
         )
 
         elapsed_time = time.time() - start_time
-        logging.debug(f"OpenAI API request completed in {elapsed_time:.2f} seconds")
+        logger.debug(f"OpenAI API request completed in {elapsed_time:.2f} seconds")
 
         return response.choices[0].message.content
 
     except Exception as e:
         elapsed_time = time.time() - start_time
-        logging.error(f"OpenAI API error after {elapsed_time:.2f} seconds: {str(e)}")
+        logger.error(f"OpenAI API error after {elapsed_time:.2f} seconds: {str(e)}")
         if elapsed_time >= 30:
             raise Exception("Request timed out. Please try again.")
         raise Exception(f"Error processing message: {str(e)}")
