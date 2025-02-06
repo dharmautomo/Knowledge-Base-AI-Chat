@@ -28,6 +28,8 @@ def index():
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
+    logger.debug("File upload request received")
+
     try:
         if 'file' not in request.files:
             logger.error("No file part in request")
@@ -38,29 +40,35 @@ def upload_file():
             logger.error("No selected file")
             return jsonify({'error': 'No selected file'}), 400
 
-        if file and allowed_file(file.filename):
-            try:
-                filename = secure_filename(file.filename)
-                filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                file.save(filepath)
-
-                with open(filepath, 'r', encoding='utf-8') as f:
-                    content = f.read()
-
-                # Clean up the file after reading
-                os.remove(filepath)
-
-                return jsonify({'content': content})
-            except Exception as e:
-                logger.error(f"Error processing file: {str(e)}")
-                return jsonify({'error': 'Error processing file'}), 500
-        else:
-            logger.error("Invalid file type")
+        if not file or not allowed_file(file.filename):
+            logger.error(f"Invalid file type: {file.filename if file else 'None'}")
             return jsonify({'error': 'Invalid file type'}), 400
+
+        try:
+            filename = secure_filename(file.filename)
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            logger.debug(f"Saving file to: {filepath}")
+
+            file.save(filepath)
+            logger.debug("File saved successfully")
+
+            with open(filepath, 'r', encoding='utf-8') as f:
+                content = f.read()
+                logger.debug(f"File content read, length: {len(content)} characters")
+
+            # Clean up the file after reading
+            os.remove(filepath)
+            logger.debug("Temporary file removed")
+
+            return jsonify({'content': content})
+
+        except Exception as e:
+            logger.error(f"Error processing file: {str(e)}")
+            return jsonify({'error': f'Error processing file: {str(e)}'}), 500
 
     except Exception as e:
         logger.error(f"Unexpected error in upload: {str(e)}")
-        return jsonify({'error': 'Server error'}), 500
+        return jsonify({'error': f'Server error: {str(e)}'}), 500
 
 @app.route('/chat', methods=['POST'])
 def chat():
@@ -75,11 +83,8 @@ def chat():
         # Add user message to history
         chat_history.append({'role': 'user', 'content': message})
 
-        # Process message with OpenAI
         try:
             response = process_message(message, chat_history)
-
-            # Add AI response to history
             chat_history.append({'role': 'assistant', 'content': response})
 
             return jsonify({
@@ -88,13 +93,12 @@ def chat():
             })
         except Exception as e:
             logger.error(f"OpenAI processing error: {str(e)}")
-            # Remove the user message from history if processing failed
-            chat_history.pop()
+            chat_history.pop()  # Remove the user message from history if processing failed
             return jsonify({'error': str(e)}), 500
 
     except Exception as e:
         logger.error(f"Error in chat endpoint: {str(e)}")
-        return jsonify({'error': 'Error processing message'}), 500
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/history', methods=['GET'])
 def get_history():

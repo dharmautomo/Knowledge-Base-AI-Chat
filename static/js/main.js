@@ -29,28 +29,23 @@ document.addEventListener('DOMContentLoaded', function() {
             loadingModal.show();
             uploadBtn.disabled = true;
 
-            const response = await Promise.race([
-                fetch('/upload', {
-                    method: 'POST',
-                    body: formData
-                }),
-                new Promise((_, reject) => 
-                    setTimeout(() => reject(new Error('Request timed out')), 30000)
-                )
-            ]);
+            const response = await fetch('/upload', {
+                method: 'POST',
+                body: formData,
+                timeout: 30000
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Error uploading file');
+            }
 
             const data = await response.json();
+            messageInput.value = data.content;
 
-            if (response.ok) {
-                messageInput.value = data.content;
-            } else {
-                throw new Error(data.error || 'Error uploading file');
-            }
         } catch (error) {
             console.error('Upload error:', error);
-            alert(error.message === 'Request timed out' 
-                ? 'Upload timed out. Please try again.' 
-                : 'Error: ' + error.message);
+            alert('Error uploading file: ' + error.message);
         } finally {
             loadingModal.hide();
             uploadBtn.disabled = false;
@@ -72,37 +67,33 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!message) return;
 
         const originalMessage = message;
+        messageInput.value = '';
+        sendBtn.disabled = true;
+
         try {
             loadingModal.show();
-            messageInput.value = '';
-            sendBtn.disabled = true;
 
-            const response = await Promise.race([
-                fetch('/chat', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ message })
-                }),
-                new Promise((_, reject) => 
-                    setTimeout(() => reject(new Error('Request timed out')), 30000)
-                )
-            ]);
+            const response = await fetch('/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ message }),
+                timeout: 30000
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Error sending message');
+            }
 
             const data = await response.json();
+            updateChatDisplay(data.history);
 
-            if (response.ok) {
-                updateChatDisplay(data.history);
-            } else {
-                throw new Error(data.error || 'Error sending message');
-            }
         } catch (error) {
             console.error('Chat error:', error);
-            alert(error.message === 'Request timed out' 
-                ? 'Message processing timed out. Please try again.' 
-                : 'Error: ' + error.message);
-            messageInput.value = originalMessage; // Restore the message if there was an error
+            alert('Error processing message: ' + error.message);
+            messageInput.value = originalMessage;
         } finally {
             loadingModal.hide();
             sendBtn.disabled = false;
