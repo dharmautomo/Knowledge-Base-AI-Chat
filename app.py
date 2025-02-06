@@ -141,6 +141,18 @@ def get_history():
     messages = ChatMessage.query.order_by(ChatMessage.timestamp).all()
     return jsonify({'history': [msg.to_dict() for msg in messages]})
 
+@app.route('/reset', methods=['POST'])
+def reset_chat():
+    try:
+        db.session.query(ChatMessage).delete()
+        db.session.commit()
+        logger.debug("Chat history cleared successfully")
+        return jsonify({'message': 'Chat reset successful'}), 200
+    except Exception as e:
+        logger.error(f"Error resetting chat: {str(e)}")
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
 # Create database tables
 with app.app_context():
     db.create_all()

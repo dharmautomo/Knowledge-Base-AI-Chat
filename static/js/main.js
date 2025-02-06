@@ -4,10 +4,41 @@ document.addEventListener('DOMContentLoaded', function() {
     const messageInput = document.getElementById('messageInput');
     const sendBtn = document.getElementById('sendBtn');
     const chatContainer = document.getElementById('chatContainer');
+    const resetBtn = document.getElementById('resetBtn');
     const loadingModal = new bootstrap.Modal(document.getElementById('loadingModal'));
 
     // Load chat history on page load
     loadChatHistory();
+
+    // Reset Chat Handler
+    resetBtn.addEventListener('click', async () => {
+        if (!confirm('Are you sure you want to reset the chat? This will clear all messages.')) {
+            return;
+        }
+
+        try {
+            loadingModal.show();
+            resetBtn.disabled = true;
+
+            const response = await fetch('/reset', {
+                method: 'POST'
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to reset chat');
+            }
+
+            chatContainer.innerHTML = '';
+            messageInput.value = '';
+
+        } catch (error) {
+            console.error('Reset error:', error);
+            alert('Error resetting chat: ' + error.message);
+        } finally {
+            loadingModal.hide();
+            resetBtn.disabled = false;
+        }
+    });
 
     // File Upload Handler
     uploadBtn.addEventListener('click', async () => {

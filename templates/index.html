@@ -11,7 +11,7 @@
 <body>
     <div class="container py-4">
         <h1 class="mb-4">Knowledge Base AI Chat</h1>
-        
+
         <!-- File Upload Section -->
         <div class="card mb-4">
             <div class="card-body">
@@ -28,11 +28,16 @@
         <!-- Chat Section -->
         <div class="card">
             <div class="card-body">
-                <h5 class="card-title">Chat</h5>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="card-title mb-0">Chat</h5>
+                    <button class="btn btn-danger" id="resetBtn">
+                        <i class="bi bi-trash"></i> Reset Chat
+                    </button>
+                </div>
                 <div class="chat-container mb-3" id="chatContainer">
                     <!-- Chat messages will be inserted here -->
                 </div>
-                
+
                 <div class="input-group">
                     <textarea class="form-control" id="messageInput" rows="2" placeholder="Type your message..."></textarea>
                     <button class="btn btn-secondary" type="button" id="sendBtn">
