@@ -31,8 +31,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const response = await fetch('/upload', {
                 method: 'POST',
-                body: formData,
-                timeout: 30000
+                body: formData
             });
 
             if (!response.ok) {
@@ -78,8 +77,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ message }),
-                timeout: 30000
+                body: JSON.stringify({ message })
             });
 
             if (!response.ok) {
