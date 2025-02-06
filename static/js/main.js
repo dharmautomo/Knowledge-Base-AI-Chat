@@ -80,12 +80,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 body: JSON.stringify({ message })
             });
 
+            const data = await response.json();
+
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'Error sending message');
+                throw new Error(data.error || 'Error sending message');
             }
 
-            const data = await response.json();
             updateChatDisplay(data.history);
 
         } catch (error) {
