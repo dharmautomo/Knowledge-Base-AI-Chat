@@ -144,10 +144,16 @@ def get_history():
 @app.route('/reset', methods=['POST'])
 def reset_chat():
     try:
+        # Clear all chat messages
         db.session.query(ChatMessage).delete()
         db.session.commit()
         logger.debug("Chat history cleared successfully")
-        return jsonify({'message': 'Chat reset successful'}), 200
+
+        # Return success response with empty history
+        return jsonify({
+            'message': 'Chat reset successful',
+            'history': []
+        }), 200
     except Exception as e:
         logger.error(f"Error resetting chat: {str(e)}")
         db.session.rollback()

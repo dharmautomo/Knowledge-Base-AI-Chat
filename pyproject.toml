@@ -19,4 +19,6 @@ dependencies = [
     "langchain-core>=0.3.33",
     "langchain-openai>=0.3.3",
     "langchain-text-splitters>=0.3.5",
+    "flask-login>=0.6.3",
+    "flask-wtf>=1.2.2",
 ]

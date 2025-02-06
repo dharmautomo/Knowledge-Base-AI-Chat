@@ -19,15 +19,23 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             loadingModal.show();
             resetBtn.disabled = true;
+            messageInput.disabled = true;
+            sendBtn.disabled = true;
 
             const response = await fetch('/reset', {
-                method: 'POST'
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
             });
 
+            const data = await response.json();
+
             if (!response.ok) {
-                throw new Error('Failed to reset chat');
+                throw new Error(data.error || 'Failed to reset chat');
             }
 
+            // Clear the chat container
             chatContainer.innerHTML = '';
             messageInput.value = '';
 
@@ -37,6 +45,8 @@ document.addEventListener('DOMContentLoaded', function() {
         } finally {
             loadingModal.hide();
             resetBtn.disabled = false;
+            messageInput.disabled = false;
+            sendBtn.disabled = false;
         }
     });
 
