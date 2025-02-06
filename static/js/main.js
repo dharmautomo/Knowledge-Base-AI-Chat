@@ -27,20 +27,29 @@ document.addEventListener('DOMContentLoaded', function() {
 
         try {
             loadingModal.show();
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
             const response = await fetch('/upload', {
                 method: 'POST',
-                body: formData
+                body: formData,
+                signal: controller.signal
             });
 
+            clearTimeout(timeoutId);
             const data = await response.json();
-            
+
             if (response.ok) {
                 messageInput.value = data.content;
             } else {
                 throw new Error(data.error || 'Error uploading file');
             }
         } catch (error) {
-            alert('Error: ' + error.message);
+            if (error.name === 'AbortError') {
+                alert('Request timed out. Please try again.');
+            } else {
+                alert('Error: ' + error.message);
+            }
         } finally {
             loadingModal.hide();
             fileInput.value = '';
@@ -64,23 +73,33 @@ document.addEventListener('DOMContentLoaded', function() {
             loadingModal.show();
             messageInput.value = '';
 
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
             const response = await fetch('/chat', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ message })
+                body: JSON.stringify({ message }),
+                signal: controller.signal
             });
 
+            clearTimeout(timeoutId);
             const data = await response.json();
-            
+
             if (response.ok) {
                 updateChatDisplay(data.history);
             } else {
                 throw new Error(data.error || 'Error sending message');
             }
         } catch (error) {
-            alert('Error: ' + error.message);
+            if (error.name === 'AbortError') {
+                alert('Request timed out. Please try again.');
+            } else {
+                alert('Error: ' + error.message);
+            }
+            messageInput.value = message; // Restore the message if there was an error
         } finally {
             loadingModal.hide();
         }
@@ -90,35 +109,36 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             const response = await fetch('/history');
             const data = await response.json();
-            
+
             if (response.ok) {
                 updateChatDisplay(data.history);
             }
         } catch (error) {
             console.error('Error loading chat history:', error);
+            alert('Error loading chat history. Please refresh the page.');
         }
     }
 
     function updateChatDisplay(history) {
         chatContainer.innerHTML = '';
-        
+
         history.forEach(message => {
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${message.role === 'user' ? 'user-message' : 'ai-message'}`;
-            
+
             const header = document.createElement('div');
             header.className = 'message-header';
             header.textContent = message.role === 'user' ? 'You' : 'AI';
-            
+
             const content = document.createElement('div');
             content.className = 'message-content';
             content.textContent = message.content;
-            
+
             messageDiv.appendChild(header);
             messageDiv.appendChild(content);
             chatContainer.appendChild(messageDiv);
         });
-        
+
         chatContainer.scrollTop = chatContainer.scrollHeight;
     }
 });
