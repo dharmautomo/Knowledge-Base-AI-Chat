@@ -146,9 +146,18 @@ def callback():
                 db.session.add(user)
                 db.session.commit()
 
-            login_user(user)
+            # Set session permanent to True
+            session.permanent = True
+            login_user(user, remember=True)
             logger.debug("User logged in successfully")
-            return redirect(url_for("index"))
+
+            # Get the next URL if available, otherwise go to index
+            next_url = request.args.get('next')
+            if not next_url or not next_url.startswith('/'):
+                next_url = url_for('index')
+
+            logger.debug(f"Redirecting to: {next_url}")
+            return redirect(next_url)
         else:
             logger.error("User email not available or not verified by Google")
             return "User email not available or not verified by Google.", 400

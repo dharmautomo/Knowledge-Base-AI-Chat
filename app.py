@@ -35,10 +35,19 @@ app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
 
 db.init_app(app)
 
-# Initialize Flask-Login
+# Initialize Flask-Login with stronger session protection
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
+login_manager.session_protection = 'strong'
+
+# Set session configuration
+app.config['SESSION_COOKIE_SECURE'] = True
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=5)
+app.config['REMEMBER_COOKIE_DURATION'] = timedelta(days=5)
+app.config['REMEMBER_COOKIE_SECURE'] = True
+app.config['REMEMBER_COOKIE_HTTPONLY'] = True
 
 # Configure upload settings
 UPLOAD_FOLDER = '/tmp'
