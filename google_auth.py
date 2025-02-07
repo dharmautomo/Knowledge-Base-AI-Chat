@@ -17,24 +17,30 @@ GOOGLE_CLIENT_ID = os.environ["GOOGLE_OAUTH_CLIENT_ID"]
 GOOGLE_CLIENT_SECRET = os.environ["GOOGLE_OAUTH_CLIENT_SECRET"]
 GOOGLE_DISCOVERY_URL = "https://accounts.google.com/.well-known/openid-configuration"
 
-# Make sure to use this redirect URL. It has to match the one in the whitelist
-REPLIT_DOMAIN = os.environ.get("REPLIT_DEV_DOMAIN")
-if not REPLIT_DOMAIN:
-    raise ValueError("REPLIT_DEV_DOMAIN environment variable is not set")
+# Get the domain from environment or request
+def get_redirect_url():
+    if request:
+        # Get the domain from the request
+        domain = request.headers.get('X-Replit-User-Domain') or request.host
+        # Ensure https for production
+        scheme = 'https' if not os.environ.get('FLASK_DEBUG') else request.scheme
+        return f"{scheme}://{domain}/google_login/callback"
+    # Fallback for initialization
+    return f"https://{os.environ.get('REPLIT_DEV_DOMAIN')}/google_login/callback"
 
-DEV_REDIRECT_URL = f'https://{REPLIT_DOMAIN}/google_login/callback'
-
+# Display setup instructions with dynamic redirect URL
 print(f"""To make Google authentication work:
 1. Go to https://console.cloud.google.com/apis/credentials
 2. Create a new OAuth 2.0 Client ID
-3. Add {DEV_REDIRECT_URL} to Authorized redirect URIs
+3. Add {get_redirect_url()} to Authorized redirect URIs
 
 For detailed instructions, see:
 https://docs.replit.com/additional-resources/google-auth-in-flask#set-up-your-oauth-app--client
 """)
 
-# Allow OAuth over HTTP for development
-os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+# Allow OAuth over HTTP for development only
+if os.environ.get('FLASK_DEBUG'):
+    os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
 client = WebApplicationClient(GOOGLE_CLIENT_ID)
 
@@ -47,14 +53,15 @@ def login():
 
         # Generate and store a random state parameter
         session['oauth_state'] = secrets.token_urlsafe(32)
+        redirect_uri = get_redirect_url()
+        logger.debug(f"Using redirect URL: {redirect_uri}")
 
         google_provider_cfg = requests.get(GOOGLE_DISCOVERY_URL).json()
         authorization_endpoint = google_provider_cfg["authorization_endpoint"]
 
-        logger.debug(f"Using redirect URL: {DEV_REDIRECT_URL}")
         request_uri = client.prepare_request_uri(
             authorization_endpoint,
-            redirect_uri=DEV_REDIRECT_URL,
+            redirect_uri=redirect_uri,
             scope=["openid", "email", "profile"],
             state=session['oauth_state']
         )
@@ -62,7 +69,7 @@ def login():
         return redirect(request_uri)
     except Exception as e:
         logger.error(f"Error in login route: {str(e)}")
-        return redirect(url_for("index"))
+        return redirect(url_for("login"))
 
 @google_auth.route("/google_login/callback")
 def callback():
@@ -80,21 +87,22 @@ def callback():
 
         if not state or state != stored_state:
             logger.error("State verification failed")
-            return redirect(url_for("index"))
+            return redirect(url_for("login"))
 
         code = request.args.get("code")
         if not code:
             logger.error("No authorization code received from Google")
-            return redirect(url_for("index"))
+            return redirect(url_for("login"))
 
         google_provider_cfg = requests.get(GOOGLE_DISCOVERY_URL).json()
         token_endpoint = google_provider_cfg["token_endpoint"]
+        redirect_uri = get_redirect_url()
 
         logger.debug("Preparing token request")
         token_url, headers, body = client.prepare_token_request(
             token_endpoint,
             authorization_response=request.url,
-            redirect_url=DEV_REDIRECT_URL,
+            redirect_url=redirect_uri,
             code=code
         )
 
@@ -113,7 +121,7 @@ def callback():
 
         if not token_response.ok:
             logger.error(f"Token response error: {token_response.text}")
-            return redirect(url_for("index"))
+            return redirect(url_for("login"))
 
         client.parse_request_body_response(json.dumps(token_response.json()))
 
@@ -124,7 +132,7 @@ def callback():
         logger.debug("Processing user info")
         if not userinfo_response.ok:
             logger.error(f"Userinfo response error: {userinfo_response.text}")
-            return redirect(url_for("index"))
+            return redirect(url_for("login"))
 
         userinfo = userinfo_response.json()
         if userinfo.get("email_verified"):
@@ -149,7 +157,7 @@ def callback():
 
     except Exception as e:
         logger.error(f"OAuth error: {str(e)}")
-        return redirect(url_for("index"))
+        return redirect(url_for("login"))
 
 @google_auth.route("/logout")
 @login_required
