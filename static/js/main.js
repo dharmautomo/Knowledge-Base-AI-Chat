@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const chatContainer = document.getElementById('chatContainer');
     const resetBtn = document.getElementById('resetBtn');
     const loadingOverlay = document.getElementById('loadingOverlay');
+    const typingIndicator = document.getElementById('typingIndicator');
 
     // Load chat history on page load
     loadChatHistory();
@@ -20,6 +21,35 @@ document.addEventListener('DOMContentLoaded', function() {
         document.body.style.overflow = '';
     }
 
+    function showTypingIndicator() {
+        typingIndicator.style.display = 'block';
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    function hideTypingIndicator() {
+        typingIndicator.style.display = 'none';
+    }
+
+    function addMessageToChat(message, role) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${role === 'user' ? 'user-message' : 'ai-message'}`;
+
+        const header = document.createElement('div');
+        header.className = 'message-header';
+        header.textContent = role === 'user' ? 'You' : 'AI';
+
+        const content = document.createElement('div');
+        content.className = 'message-content';
+        content.textContent = message;
+
+        messageDiv.appendChild(header);
+        messageDiv.appendChild(content);
+
+        // Insert before typing indicator
+        chatContainer.insertBefore(messageDiv, typingIndicator);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
     // Reset Chat Handler
     resetBtn.addEventListener('click', async () => {
         if (!confirm('Are you sure you want to reset the chat? This will clear all messages.')) {
@@ -27,7 +57,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         try {
-            // Disable all interactive elements
             resetBtn.disabled = true;
             messageInput.disabled = true;
             sendBtn.disabled = true;
@@ -46,9 +75,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 throw new Error(data.error || 'Failed to reset chat');
             }
 
-            // Clear the chat container
             chatContainer.innerHTML = '';
             messageInput.value = '';
+
+            // Re-add typing indicator after clearing
+            chatContainer.appendChild(typingIndicator);
 
         } catch (error) {
             console.error('Reset error:', error);
@@ -117,9 +148,12 @@ document.addEventListener('DOMContentLoaded', function() {
         const message = messageInput.value.trim();
         if (!message) return;
 
-        const originalMessage = message;
         messageInput.value = '';
         sendBtn.disabled = true;
+
+        // Immediately add user message to chat
+        addMessageToChat(message, 'user');
+        showTypingIndicator();
 
         try {
             const response = await fetch('/chat', {
@@ -136,12 +170,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 throw new Error(data.error || 'Error sending message');
             }
 
+            hideTypingIndicator();
             updateChatDisplay(data.history);
 
         } catch (error) {
             console.error('Chat error:', error);
+            hideTypingIndicator();
             alert('Error processing message: ' + error.message);
-            messageInput.value = originalMessage;
         } finally {
             sendBtn.disabled = false;
         }
@@ -164,25 +199,13 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function updateChatDisplay(history) {
-        chatContainer.innerHTML = '';
+        // Clear all messages but keep typing indicator
+        while (chatContainer.firstChild && chatContainer.firstChild !== typingIndicator) {
+            chatContainer.removeChild(chatContainer.firstChild);
+        }
 
         history.forEach(message => {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${message.role === 'user' ? 'user-message' : 'ai-message'}`;
-
-            const header = document.createElement('div');
-            header.className = 'message-header';
-            header.textContent = message.role === 'user' ? 'You' : 'AI';
-
-            const content = document.createElement('div');
-            content.className = 'message-content';
-            content.textContent = message.content;
-
-            messageDiv.appendChild(header);
-            messageDiv.appendChild(content);
-            chatContainer.appendChild(messageDiv);
+            addMessageToChat(message.content, message.role);
         });
-
-        chatContainer.scrollTop = chatContainer.scrollHeight;
     }
 });
