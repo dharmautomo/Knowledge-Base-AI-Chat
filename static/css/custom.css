@@ -66,10 +66,13 @@
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     background: rgba(33, 37, 41, 0.95);
     backdrop-filter: blur(10px);
+    height: 100%;
 }
 
 .card-body {
     padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
 }
 
 /* Button styling */
@@ -119,9 +122,10 @@
 }
 
 /* Container spacing */
-.container {
-    max-width: 900px;
+.container-fluid {
+    max-width: 1400px;
     margin: 0 auto;
+    padding: 0 1.5rem;
 }
 
 /* Title styling */
@@ -173,6 +177,10 @@ h1 {
     transition: all 0.3s ease;
     background: rgba(0, 0, 0, 0.1);
     cursor: pointer;
+    height: calc(100% - 60px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .upload-zone:hover {
@@ -223,4 +231,15 @@ h1 {
 
 .selected-file i {
     color: var(--bs-primary);
+}
+
+/* Responsive adjustments */
+@media (max-width: 991.98px) {
+    .chat-container {
+        height: 50vh;
+    }
+
+    .upload-zone {
+        height: 300px;
+    }
 }
