@@ -18,9 +18,21 @@ app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "default_secret_key")
 app.permanent_session_lifetime = timedelta(days=5)
 
-# Database configuration
+# Database configuration with proper SSL and connection pooling
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+    'pool_pre_ping': True,  # Enable connection health checks
+    'pool_recycle': 300,    # Recycle connections every 5 minutes
+    'pool_timeout': 30,     # Connection timeout of 30 seconds
+    'pool_size': 10,        # Maximum pool size
+    'max_overflow': 5,      # Maximum number of connections above pool_size
+    'connect_args': {
+        'sslmode': 'require',  # Force SSL mode
+        'connect_timeout': 10   # Connection attempt timeout
+    }
+}
+
 db.init_app(app)
 
 # Initialize Flask-Login
