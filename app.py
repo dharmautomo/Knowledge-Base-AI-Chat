@@ -92,7 +92,7 @@ def upload_file():
             os.remove(filepath)
             logger.debug("Temporary file removed")
 
-            return jsonify({'content': content})
+            return jsonify({'message': 'File processed successfully'})
 
         except Exception as e:
             logger.error(f"Error processing file: {str(e)}")

@@ -123,8 +123,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 throw new Error(errorData.error || 'Error uploading file');
             }
 
-            const data = await response.json();
-            messageInput.value = data.content;
+            await response.json();
+            alert('File uploaded and processed successfully!');
 
         } catch (error) {
             console.error('Upload error:', error);
