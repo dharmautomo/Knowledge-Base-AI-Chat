@@ -671,6 +671,8 @@ dependencies = [
     { name = "openai" },
     { name = "psycopg2-binary" },
     { name = "pypdf2" },
+    { name = "requests" },
+    { name = "sqlalchemy" },
     { name = "twilio" },
     { name = "werkzeug" },
 ]
@@ -694,6 +696,8 @@ requires-dist = [
     { name = "openai", specifier = ">=1.61.1" },
     { name = "psycopg2-binary", specifier = ">=2.9.10" },
     { name = "pypdf2", specifier = ">=3.0.0" },
+    { name = "requests", specifier = ">=2.32.3" },
+    { name = "sqlalchemy", specifier = ">=2.0.37" },
     { name = "twilio", specifier = ">=9.4.4" },
     { name = "werkzeug", specifier = ">=3.1.3" },
 ]

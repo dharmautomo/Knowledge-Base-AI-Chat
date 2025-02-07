@@ -19,12 +19,18 @@ GOOGLE_DISCOVERY_URL = "https://accounts.google.com/.well-known/openid-configura
 
 # Get the domain from environment or request
 def get_redirect_url():
+    """Get the correct redirect URL for the environment"""
     if request:
-        # Get the domain from the request, preferring the production domain if available
-        domain = request.headers.get('X-Forwarded-Host') or request.headers.get('X-Replit-User-Domain') or request.host
-        # Always use HTTPS for OAuth callbacks
+        # Get the domain from the request, using the most reliable header
+        domain = (request.headers.get('X-Forwarded-Host') or 
+                 request.headers.get('Host') or 
+                 request.headers.get('X-Replit-User-Domain') or 
+                 request.host)
+
+        # Always use HTTPS for OAuth callbacks in production
         return f"https://{domain}/google_login/callback"
-    # Fallback for initialization
+
+    # Fallback for initialization (should rarely be used)
     return f"https://{os.environ.get('REPLIT_DEV_DOMAIN')}/google_login/callback"
 
 print(f"""To make Google authentication work:
@@ -59,7 +65,7 @@ def login():
 
         request_uri = client.prepare_request_uri(
             authorization_endpoint,
-            redirect_uri=redirect_uri,
+            redirect_uri=redirect_uri,  # Use our helper function
             scope=["openid", "email", "profile"],
             state=session['oauth_state']
         )
