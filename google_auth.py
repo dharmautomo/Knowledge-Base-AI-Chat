@@ -65,10 +65,15 @@ def login():
 def callback():
     try:
         logger.debug("Received callback from Google")
+        logger.debug(f"Request URL: {request.url}")
+        logger.debug(f"Request args: {request.args}")
 
         # Verify state parameter
         state = request.args.get('state')
         stored_state = session.pop('oauth_state', None)
+
+        logger.debug(f"Received state: {state}")
+        logger.debug(f"Stored state: {stored_state}")
 
         if not state or state != stored_state:
             logger.error("State verification failed")
@@ -90,7 +95,10 @@ def callback():
             code=code
         )
 
-        logger.debug("Sending token request to Google")
+        logger.debug(f"Token request URL: {token_url}")
+        logger.debug(f"Token request headers: {headers}")
+        logger.debug(f"Token request body: {body}")
+
         token_response = requests.post(
             token_url,
             headers=headers,
@@ -98,7 +106,12 @@ def callback():
             auth=(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET),
         )
 
-        logger.debug("Parsing token response")
+        logger.debug(f"Token response status: {token_response.status_code}")
+
+        if not token_response.ok:
+            logger.error(f"Token response error: {token_response.text}")
+            return redirect(url_for("login"))
+
         client.parse_request_body_response(json.dumps(token_response.json()))
 
         userinfo_endpoint = google_provider_cfg["userinfo_endpoint"]
@@ -106,6 +119,10 @@ def callback():
         userinfo_response = requests.get(uri, headers=headers, data=body)
 
         logger.debug("Processing user info")
+        if not userinfo_response.ok:
+            logger.error(f"Userinfo response error: {userinfo_response.text}")
+            return redirect(url_for("login"))
+
         userinfo = userinfo_response.json()
         if userinfo.get("email_verified"):
             users_email = userinfo["email"]
