@@ -3,10 +3,11 @@ import os
 import logging
 import requests
 from app import db
-from flask import Blueprint, redirect, request, url_for
+from flask import Blueprint, redirect, request, url_for, session
 from flask_login import login_required, login_user, logout_user
 from models import User
 from oauthlib.oauth2 import WebApplicationClient
+import secrets
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -40,6 +41,10 @@ google_auth = Blueprint("google_auth", __name__)
 def login():
     try:
         logger.debug("Starting Google login process")
+
+        # Generate and store a random state parameter
+        session['oauth_state'] = secrets.token_urlsafe(32)
+
         google_provider_cfg = requests.get(GOOGLE_DISCOVERY_URL).json()
         authorization_endpoint = google_provider_cfg["authorization_endpoint"]
 
@@ -48,6 +53,7 @@ def login():
             authorization_endpoint,
             redirect_uri=DEV_REDIRECT_URL,
             scope=["openid", "email", "profile"],
+            state=session['oauth_state']
         )
         logger.debug(f"Redirecting to Google authorization URL: {request_uri}")
         return redirect(request_uri)
@@ -59,6 +65,15 @@ def login():
 def callback():
     try:
         logger.debug("Received callback from Google")
+
+        # Verify state parameter
+        state = request.args.get('state')
+        stored_state = session.pop('oauth_state', None)
+
+        if not state or state != stored_state:
+            logger.error("State verification failed")
+            return redirect(url_for("login"))
+
         code = request.args.get("code")
         if not code:
             logger.error("No authorization code received from Google")
@@ -70,9 +85,9 @@ def callback():
         logger.debug("Preparing token request")
         token_url, headers, body = client.prepare_token_request(
             token_endpoint,
-            authorization_response=request.url.replace("http://", "https://"),
+            authorization_response=request.url,
             redirect_url=DEV_REDIRECT_URL,
-            code=code,
+            code=code
         )
 
         logger.debug("Sending token request to Google")
