@@ -20,15 +20,13 @@ GOOGLE_DISCOVERY_URL = "https://accounts.google.com/.well-known/openid-configura
 # Get the domain from environment or request
 def get_redirect_url():
     if request:
-        # Get the domain from the request
-        domain = request.headers.get('X-Replit-User-Domain') or request.host
-        # Ensure https for production
-        scheme = 'https' if not os.environ.get('FLASK_DEBUG') else request.scheme
-        return f"{scheme}://{domain}/google_login/callback"
+        # Get the domain from the request, preferring the production domain if available
+        domain = request.headers.get('X-Forwarded-Host') or request.headers.get('X-Replit-User-Domain') or request.host
+        # Always use HTTPS for OAuth callbacks
+        return f"https://{domain}/google_login/callback"
     # Fallback for initialization
     return f"https://{os.environ.get('REPLIT_DEV_DOMAIN')}/google_login/callback"
 
-# Display setup instructions with dynamic redirect URL
 print(f"""To make Google authentication work:
 1. Go to https://console.cloud.google.com/apis/credentials
 2. Create a new OAuth 2.0 Client ID
@@ -101,7 +99,7 @@ def callback():
         logger.debug("Preparing token request")
         token_url, headers, body = client.prepare_token_request(
             token_endpoint,
-            authorization_response=request.url,
+            authorization_response=request.url.replace('http://', 'https://'),
             redirect_url=redirect_uri,
             code=code
         )
