@@ -3,6 +3,7 @@ from langchain_openai import OpenAIEmbeddings
 from langchain_community.vectorstores import FAISS
 import logging
 import os
+from PyPDF2 import PdfReader
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -17,6 +18,25 @@ class TextProcessor:
             length_function=len,
         )
         self.vector_store = None
+
+    def extract_text_from_pdf(self, pdf_file):
+        """
+        Extract text content from a PDF file.
+        """
+        try:
+            logger.debug(f"Processing PDF file")
+            reader = PdfReader(pdf_file)
+            text = ""
+
+            for page in reader.pages:
+                text += page.extract_text() + "\n"
+
+            logger.debug(f"Extracted {len(text)} characters from PDF")
+            return text.strip()
+
+        except Exception as e:
+            logger.error(f"Error extracting text from PDF: {str(e)}")
+            raise
 
     def process_document(self, text):
         """

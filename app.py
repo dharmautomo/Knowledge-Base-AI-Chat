@@ -5,6 +5,7 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.utils import secure_filename
 from utils.openai_helper import process_message, process_document
 from datetime import datetime
+from utils.text_processor import TextProcessor
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -21,8 +22,11 @@ db = SQLAlchemy(app)
 
 # Configure upload settings
 UPLOAD_FOLDER = '/tmp'
-ALLOWED_EXTENSIONS = {'txt', 'pdf', 'doc', 'docx'}  # Extended file support
+ALLOWED_EXTENSIONS = {'txt', 'pdf'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+# Initialize TextProcessor
+text_processor = TextProcessor()
 
 class ChatMessage(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -71,9 +75,14 @@ def upload_file():
             file.save(filepath)
             logger.debug("File saved successfully")
 
-            with open(filepath, 'r', encoding='utf-8') as f:
-                content = f.read()
-                logger.debug(f"File content read, length: {len(content)} characters")
+            # Process based on file type
+            if filename.lower().endswith('.pdf'):
+                content = text_processor.extract_text_from_pdf(filepath)
+            else:  # .txt files
+                with open(filepath, 'r', encoding='utf-8') as f:
+                    content = f.read()
+
+            logger.debug(f"File content read, length: {len(content)} characters")
 
             # Process the document content
             num_chunks = process_document(content)

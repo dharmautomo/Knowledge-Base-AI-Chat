@@ -21,4 +21,5 @@ dependencies = [
     "langchain-text-splitters>=0.3.5",
     "flask-login>=0.6.3",
     "flask-wtf>=1.2.2",
+    "pypdf2>=3.0.0",
 ]

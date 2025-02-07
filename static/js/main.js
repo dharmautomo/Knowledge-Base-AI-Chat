@@ -100,8 +100,9 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        if (!file.name.toLowerCase().endsWith('.txt')) {
-            alert('Please upload only TXT files.');
+        const fileExtension = file.name.toLowerCase().split('.').pop();
+        if (!['txt', 'pdf'].includes(fileExtension)) {
+            alert('Please upload only TXT or PDF files.');
             return;
         }
 
