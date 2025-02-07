@@ -7,9 +7,101 @@ document.addEventListener('DOMContentLoaded', function() {
     const resetBtn = document.getElementById('resetBtn');
     const loadingOverlay = document.getElementById('loadingOverlay');
     const typingIndicator = document.getElementById('typingIndicator');
+    const dropZone = document.getElementById('dropZone');
 
-    // Load chat history on page load
-    loadChatHistory();
+    // Drag and Drop handlers
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, preventDefaults, false);
+        document.body.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, highlight, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, unhighlight, false);
+    });
+
+    function highlight(e) {
+        dropZone.classList.add('dragover');
+    }
+
+    function unhighlight(e) {
+        dropZone.classList.remove('dragover');
+    }
+
+    dropZone.addEventListener('drop', handleDrop, false);
+
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+
+        if (files.length > 0) {
+            fileInput.files = files;
+            handleFileUpload(files[0]);
+        }
+    }
+
+    // Modified upload button click handler
+    uploadBtn.addEventListener('click', () => {
+        const file = fileInput.files[0];
+        if (file) {
+            handleFileUpload(file);
+        }
+    });
+
+    // File upload handler
+    function handleFileUpload(file) {
+        if (!file) {
+            alert('Please select a file first.');
+            return;
+        }
+
+        const fileExtension = file.name.toLowerCase().split('.').pop();
+        if (!['txt', 'pdf'].includes(fileExtension)) {
+            alert('Please upload only TXT or PDF files.');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        uploadFile(formData);
+    }
+
+    async function uploadFile(formData) {
+        try {
+            showLoading();
+            uploadBtn.disabled = true;
+
+            const response = await fetch('/upload', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Error uploading file');
+            }
+
+            await response.json();
+            alert('File uploaded and processed successfully!');
+
+        } catch (error) {
+            console.error('Upload error:', error);
+            alert('Error uploading file: ' + error.message);
+        } finally {
+            hideLoading();
+            uploadBtn.disabled = false;
+            fileInput.value = '';
+        }
+    }
 
     function showLoading() {
         loadingOverlay.classList.add('active');
@@ -92,49 +184,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // File Upload Handler
-    uploadBtn.addEventListener('click', async () => {
-        const file = fileInput.files[0];
-        if (!file) {
-            alert('Please select a file first.');
-            return;
-        }
-
-        const fileExtension = file.name.toLowerCase().split('.').pop();
-        if (!['txt', 'pdf'].includes(fileExtension)) {
-            alert('Please upload only TXT or PDF files.');
-            return;
-        }
-
-        const formData = new FormData();
-        formData.append('file', file);
-
-        try {
-            showLoading();
-            uploadBtn.disabled = true;
-
-            const response = await fetch('/upload', {
-                method: 'POST',
-                body: formData
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'Error uploading file');
-            }
-
-            await response.json();
-            alert('File uploaded and processed successfully!');
-
-        } catch (error) {
-            console.error('Upload error:', error);
-            alert('Error uploading file: ' + error.message);
-        } finally {
-            hideLoading();
-            uploadBtn.disabled = false;
-            fileInput.value = '';
-        }
-    });
 
     // Send Message Handler
     sendBtn.addEventListener('click', sendMessage);

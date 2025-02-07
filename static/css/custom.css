@@ -162,3 +162,50 @@ h1 {
     0%, 60%, 100% { transform: translateY(0); }
     30% { transform: translateY(-4px); }
 }
+
+/* Drag and Drop styles */
+.upload-zone {
+    position: relative;
+    border: 2px dashed rgba(255, 255, 255, 0.2);
+    border-radius: 0.5rem;
+    padding: 2rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    background: rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+}
+
+.upload-zone:hover {
+    border-color: var(--bs-primary);
+    background: rgba(13, 110, 253, 0.05);
+}
+
+.upload-zone.dragover {
+    border-color: var(--bs-primary);
+    background: rgba(13, 110, 253, 0.1);
+    transform: scale(1.02);
+}
+
+.upload-zone input[type="file"] {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.upload-zone-content {
+    pointer-events: none;
+}
+
+.upload-zone-content i {
+    color: rgba(255, 255, 255, 0.5);
+    transition: color 0.3s ease;
+}
+
+.upload-zone:hover .upload-zone-content i,
+.upload-zone.dragover .upload-zone-content i {
+    color: var(--bs-primary);
+}
