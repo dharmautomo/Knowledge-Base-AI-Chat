@@ -110,10 +110,6 @@ def callback():
             code=code
         )
 
-        logger.debug(f"Token request URL: {token_url}")
-        logger.debug(f"Token request headers: {headers}")
-        logger.debug(f"Token request body: {body}")
-
         token_response = requests.post(
             token_url,
             headers=headers,
@@ -157,13 +153,9 @@ def callback():
             login_user(user, remember=True)
             logger.debug("User logged in successfully")
 
-            # Get the next URL if available, otherwise go to index
-            next_url = request.args.get('next')
-            if not next_url or not next_url.startswith('/'):
-                next_url = url_for('index')
-
-            logger.debug(f"Redirecting to: {next_url}")
-            return redirect(next_url)
+            # Redirect to index page after successful login
+            logger.debug("Redirecting to index page")
+            return redirect(url_for('index'))
         else:
             logger.error("User email not available or not verified by Google")
             return "User email not available or not verified by Google.", 400
