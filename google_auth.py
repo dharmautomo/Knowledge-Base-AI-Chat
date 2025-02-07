@@ -34,51 +34,56 @@ def login():
 
     request_uri = client.prepare_request_uri(
         authorization_endpoint,
-        redirect_uri=request.base_url.replace("http://", "https://") + "/callback",
+        redirect_uri=DEV_REDIRECT_URL,
         scope=["openid", "email", "profile"],
     )
     return redirect(request_uri)
 
 @google_auth.route("/google_login/callback")
 def callback():
-    code = request.args.get("code")
-    google_provider_cfg = requests.get(GOOGLE_DISCOVERY_URL).json()
-    token_endpoint = google_provider_cfg["token_endpoint"]
+    try:
+        code = request.args.get("code")
+        google_provider_cfg = requests.get(GOOGLE_DISCOVERY_URL).json()
+        token_endpoint = google_provider_cfg["token_endpoint"]
 
-    token_url, headers, body = client.prepare_token_request(
-        token_endpoint,
-        authorization_response=request.url.replace("http://", "https://"),
-        redirect_url=request.base_url.replace("http://", "https://"),
-        code=code,
-    )
-    token_response = requests.post(
-        token_url,
-        headers=headers,
-        data=body,
-        auth=(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET),
-    )
+        token_url, headers, body = client.prepare_token_request(
+            token_endpoint,
+            authorization_response=request.url.replace("http://", "https://"),
+            redirect_url=DEV_REDIRECT_URL,
+            code=code,
+        )
+        token_response = requests.post(
+            token_url,
+            headers=headers,
+            data=body,
+            auth=(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET),
+        )
 
-    client.parse_request_body_response(json.dumps(token_response.json()))
+        client.parse_request_body_response(json.dumps(token_response.json()))
 
-    userinfo_endpoint = google_provider_cfg["userinfo_endpoint"]
-    uri, headers, body = client.add_token(userinfo_endpoint)
-    userinfo_response = requests.get(uri, headers=headers, data=body)
+        userinfo_endpoint = google_provider_cfg["userinfo_endpoint"]
+        uri, headers, body = client.add_token(userinfo_endpoint)
+        userinfo_response = requests.get(uri, headers=headers, data=body)
 
-    userinfo = userinfo_response.json()
-    if userinfo.get("email_verified"):
-        users_email = userinfo["email"]
-        users_name = userinfo["given_name"]
-    else:
-        return "User email not available or not verified by Google.", 400
+        userinfo = userinfo_response.json()
+        if userinfo.get("email_verified"):
+            users_email = userinfo["email"]
+            users_name = userinfo["given_name"]
+        else:
+            return "User email not available or not verified by Google.", 400
 
-    user = User.query.filter_by(email=users_email).first()
-    if not user:
-        user = User(username=users_name, email=users_email)
-        db.session.add(user)
-        db.session.commit()
+        user = User.query.filter_by(email=users_email).first()
+        if not user:
+            user = User(username=users_name, email=users_email)
+            db.session.add(user)
+            db.session.commit()
 
-    login_user(user)
-    return redirect(url_for("index"))
+        login_user(user)
+        return redirect(url_for("index"))
+
+    except Exception as e:
+        print(f"OAuth error: {str(e)}")
+        return redirect(url_for("login"))
 
 @google_auth.route("/logout")
 @login_required
