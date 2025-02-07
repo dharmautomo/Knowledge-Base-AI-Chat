@@ -59,7 +59,7 @@ def login():
         return redirect(request_uri)
     except Exception as e:
         logger.error(f"Error in login route: {str(e)}")
-        return redirect(url_for("login"))
+        return redirect(url_for("index"))
 
 @google_auth.route("/google_login/callback")
 def callback():
@@ -77,12 +77,12 @@ def callback():
 
         if not state or state != stored_state:
             logger.error("State verification failed")
-            return redirect(url_for("login"))
+            return redirect(url_for("index"))
 
         code = request.args.get("code")
         if not code:
             logger.error("No authorization code received from Google")
-            return redirect(url_for("login"))
+            return redirect(url_for("index"))
 
         google_provider_cfg = requests.get(GOOGLE_DISCOVERY_URL).json()
         token_endpoint = google_provider_cfg["token_endpoint"]
@@ -110,7 +110,7 @@ def callback():
 
         if not token_response.ok:
             logger.error(f"Token response error: {token_response.text}")
-            return redirect(url_for("login"))
+            return redirect(url_for("index"))
 
         client.parse_request_body_response(json.dumps(token_response.json()))
 
@@ -121,7 +121,7 @@ def callback():
         logger.debug("Processing user info")
         if not userinfo_response.ok:
             logger.error(f"Userinfo response error: {userinfo_response.text}")
-            return redirect(url_for("login"))
+            return redirect(url_for("index"))
 
         userinfo = userinfo_response.json()
         if userinfo.get("email_verified"):
@@ -146,7 +146,7 @@ def callback():
 
     except Exception as e:
         logger.error(f"OAuth error: {str(e)}")
-        return redirect(url_for("login"))
+        return redirect(url_for("index"))
 
 @google_auth.route("/logout")
 @login_required

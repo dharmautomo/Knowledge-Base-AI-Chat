@@ -46,18 +46,27 @@ app.register_blueprint(google_auth)
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+# Custom unauthorized handler
+@login_manager.unauthorized_handler
+def unauthorized():
+    logger.debug("Unauthorized access attempt")
+    return redirect(url_for('login'))
+
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @app.route('/login')
 def login():
     if current_user.is_authenticated:
+        logger.debug(f"Already authenticated user {current_user.id} accessing login page")
         return redirect(url_for('index'))
+    logger.debug("Rendering login page for unauthenticated user")
     return render_template('login.html')
 
 @app.route('/')
 @login_required
 def index():
+    logger.debug(f"User {current_user.id} accessing index page")
     return render_template('index.html')
 
 @app.route('/upload', methods=['POST'])
