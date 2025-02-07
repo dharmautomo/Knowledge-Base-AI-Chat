@@ -2,7 +2,7 @@ import json
 import os
 import logging
 import requests
-from app import db
+from extensions import db
 from flask import Blueprint, redirect, request, url_for, session
 from flask_login import login_required, login_user, logout_user
 from models import User

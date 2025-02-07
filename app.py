@@ -1,25 +1,26 @@
 import os
 import logging
+import uuid
 from flask import Flask, render_template, request, jsonify, redirect, url_for
-from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, login_required, current_user
 from werkzeug.utils import secure_filename
 from utils.openai_helper import process_message, process_document
 from datetime import datetime
 from utils.text_processor import TextProcessor
+from extensions import db
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
-# Initialize Flask and SQLAlchemy
+# Initialize Flask
 app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "default_secret_key")
 
 # Database configuration
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db = SQLAlchemy(app)
+db.init_app(app)
 
 # Initialize Flask-Login
 login_manager = LoginManager()
@@ -35,7 +36,7 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 text_processor = TextProcessor()
 
 # Import models after db initialization
-from models import User, ChatMessage
+from models import User, ChatMessage, File
 from google_auth import google_auth
 
 # Register Google Auth blueprint
@@ -63,6 +64,7 @@ def index():
 @login_required
 def upload_file():
     logger.debug("File upload request received")
+    filepath = None
 
     try:
         if 'file' not in request.files:
@@ -79,15 +81,26 @@ def upload_file():
             return jsonify({'error': 'Invalid file type'}), 400
 
         try:
-            filename = secure_filename(file.filename)
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            # Generate unique filename
+            original_filename = secure_filename(file.filename)
+            unique_filename = f"{uuid.uuid4()}_{original_filename}"
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
             logger.debug(f"Saving file to: {filepath}")
 
             file.save(filepath)
             logger.debug("File saved successfully")
 
+            # Create file record in database
+            file_record = File(
+                filename=unique_filename,
+                original_filename=original_filename,
+                user_id=current_user.id
+            )
+            db.session.add(file_record)
+            db.session.commit()
+
             # Process based on file type
-            if filename.lower().endswith('.pdf'):
+            if original_filename.lower().endswith('.pdf'):
                 content = text_processor.extract_text_from_pdf(filepath)
             else:  # .txt files
                 with open(filepath, 'r', encoding='utf-8') as f:
@@ -99,19 +112,53 @@ def upload_file():
             num_chunks = process_document(content)
             logger.debug(f"Document processed into {num_chunks} chunks")
 
-            # Clean up the file after reading
-            os.remove(filepath)
-            logger.debug("Temporary file removed")
-
-            return jsonify({'message': 'File processed successfully'})
+            return jsonify({
+                'message': 'File processed successfully',
+                'file': file_record.to_dict()
+            })
 
         except Exception as e:
             logger.error(f"Error processing file: {str(e)}")
+            db.session.rollback()
+            if filepath and os.path.exists(filepath):
+                os.remove(filepath)
             return jsonify({'error': f'Error processing file: {str(e)}'}), 500
 
     except Exception as e:
         logger.error(f"Unexpected error in upload: {str(e)}")
         return jsonify({'error': f'Server error: {str(e)}'}), 500
+
+@app.route('/files', methods=['GET'])
+@login_required
+def get_files():
+    try:
+        files = File.query.filter_by(user_id=current_user.id).order_by(File.uploaded_at.desc()).all()
+        return jsonify({'files': [file.to_dict() for file in files]})
+    except Exception as e:
+        logger.error(f"Error retrieving files: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/files/<int:file_id>', methods=['DELETE'])
+@login_required
+def delete_file(file_id):
+    try:
+        file = File.query.filter_by(id=file_id, user_id=current_user.id).first()
+
+        if not file:
+            return jsonify({'error': 'File not found or unauthorized'}), 404
+
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+        if os.path.exists(filepath):
+            os.remove(filepath)
+
+        db.session.delete(file)
+        db.session.commit()
+
+        return jsonify({'message': 'File deleted successfully'})
+    except Exception as e:
+        logger.error(f"Error deleting file: {str(e)}")
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/chat', methods=['POST'])
 @login_required

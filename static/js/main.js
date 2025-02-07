@@ -99,7 +99,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
             await response.json();
             alert('File uploaded and processed successfully!');
-            updateSelectedFileDisplay(null); // Clear the selected file display after successful upload
+            updateSelectedFileDisplay(null);
+            loadFiles(); // Refresh the files list
 
         } catch (error) {
             console.error('Upload error:', error);
@@ -278,4 +279,77 @@ document.addEventListener('DOMContentLoaded', function() {
             selectedFileDiv.style.display = 'none';
         }
     }
+
+    async function loadFiles() {
+        try {
+            const response = await fetch('/files');
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Error loading files');
+            }
+
+            updateFilesList(data.files);
+        } catch (error) {
+            console.error('Error loading files:', error);
+            alert('Error loading files. Please try again.');
+        }
+    }
+
+    function updateFilesList(files) {
+        const filesListDiv = document.getElementById('filesList');
+        filesListDiv.innerHTML = '';
+
+        if (files.length === 0) {
+            filesListDiv.innerHTML = '<p class="text-muted">No files uploaded yet.</p>';
+            return;
+        }
+
+        files.forEach(file => {
+            const fileDiv = document.createElement('div');
+            fileDiv.className = 'file-item d-flex justify-content-between align-items-center p-2 mb-2';
+
+            const fileInfo = document.createElement('div');
+            fileInfo.className = 'd-flex align-items-center';
+            fileInfo.innerHTML = `
+                <i class="bi bi-file-text me-2"></i>
+                <span>${file.original_filename}</span>
+                <small class="text-muted ms-2">${new Date(file.uploaded_at).toLocaleString()}</small>
+            `;
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'btn btn-danger btn-sm';
+            deleteBtn.innerHTML = '<i class="bi bi-trash"></i>';
+            deleteBtn.onclick = () => deleteFile(file.id);
+
+            fileDiv.appendChild(fileInfo);
+            fileDiv.appendChild(deleteBtn);
+            filesListDiv.appendChild(fileDiv);
+        });
+    }
+
+    async function deleteFile(fileId) {
+        if (!confirm('Are you sure you want to delete this file?')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/files/${fileId}`, {
+                method: 'DELETE'
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Error deleting file');
+            }
+
+            loadFiles(); // Refresh the files list
+        } catch (error) {
+            console.error('Error deleting file:', error);
+            alert('Error deleting file. Please try again.');
+        }
+    }
+
+    loadFiles(); // Load files when page loads
 });

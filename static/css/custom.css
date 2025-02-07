@@ -255,3 +255,26 @@ h1 {
         transform: translateY(0);
     }
 }
+
+/* File list styling */
+.files-list {
+    max-height: 300px;
+    overflow-y: auto;
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+}
+
+.file-item {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 0.25rem;
+    transition: all 0.2s ease;
+}
+
+.file-item:hover {
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.file-item small {
+    font-size: 0.75rem;
+}
