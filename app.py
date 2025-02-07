@@ -1,7 +1,8 @@
 import os
 import logging
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager, login_required, current_user
 from werkzeug.utils import secure_filename
 from utils.openai_helper import process_message, process_document
 from datetime import datetime
@@ -20,6 +21,11 @@ app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
+# Initialize Flask-Login
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+
 # Configure upload settings
 UPLOAD_FOLDER = '/tmp'
 ALLOWED_EXTENSIONS = {'txt', 'pdf'}
@@ -28,28 +34,33 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 # Initialize TextProcessor
 text_processor = TextProcessor()
 
-class ChatMessage(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    role = db.Column(db.String(20), nullable=False)
-    content = db.Column(db.Text, nullable=False)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+# Import models after db initialization
+from models import User, ChatMessage
+from google_auth import google_auth
 
-    def to_dict(self):
-        return {
-            'role': self.role,
-            'content': self.content,
-            'timestamp': self.timestamp.isoformat()
-        }
+# Register Google Auth blueprint
+app.register_blueprint(google_auth)
 
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+@app.route('/login')
+def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+    return render_template('login.html')
+
 @app.route('/')
+@login_required
 def index():
     return render_template('index.html')
 
 @app.route('/upload', methods=['POST'])
+@login_required
 def upload_file():
     logger.debug("File upload request received")
 
@@ -103,6 +114,7 @@ def upload_file():
         return jsonify({'error': f'Server error: {str(e)}'}), 500
 
 @app.route('/chat', methods=['POST'])
+@login_required
 def chat():
     try:
         data = request.json
@@ -112,33 +124,35 @@ def chat():
             logger.error("No message provided")
             return jsonify({'error': 'No message provided'}), 400
 
-        # Create and save user message
-        user_message = ChatMessage(role='user', content=message)
+        # Create and save user message with user_id
+        user_message = ChatMessage(role='user', content=message, user_id=current_user.id)
         db.session.add(user_message)
         db.session.commit()
 
         try:
-            # Get recent chat history from database
+            # Get recent chat history from database for current user
             chat_history = [msg.to_dict() for msg in 
-                          ChatMessage.query.order_by(ChatMessage.timestamp.desc()).limit(10).all()]
+                          ChatMessage.query.filter_by(user_id=current_user.id)
+                          .order_by(ChatMessage.timestamp.desc()).limit(10).all()]
             chat_history.reverse()  # Most recent last
 
             response = process_message(message, chat_history)
 
-            # Save assistant's response
-            assistant_message = ChatMessage(role='assistant', content=response)
+            # Save assistant's response with user_id
+            assistant_message = ChatMessage(role='assistant', content=response, user_id=current_user.id)
             db.session.add(assistant_message)
             db.session.commit()
 
             return jsonify({
                 'response': response,
                 'history': [msg.to_dict() for msg in 
-                           ChatMessage.query.order_by(ChatMessage.timestamp).all()]
+                           ChatMessage.query.filter_by(user_id=current_user.id)
+                           .order_by(ChatMessage.timestamp).all()]
             })
 
         except Exception as e:
             logger.error(f"OpenAI processing error: {str(e)}")
-            db.session.rollback()  # Rollback the user message on error
+            db.session.rollback()
             return jsonify({'error': str(e)}), 500
 
     except Exception as e:
@@ -146,19 +160,20 @@ def chat():
         return jsonify({'error': str(e)}), 500
 
 @app.route('/history', methods=['GET'])
+@login_required
 def get_history():
-    messages = ChatMessage.query.order_by(ChatMessage.timestamp).all()
+    messages = ChatMessage.query.filter_by(user_id=current_user.id).order_by(ChatMessage.timestamp).all()
     return jsonify({'history': [msg.to_dict() for msg in messages]})
 
 @app.route('/reset', methods=['POST'])
+@login_required
 def reset_chat():
     try:
-        # Clear all chat messages
-        db.session.query(ChatMessage).delete()
+        # Clear chat messages for current user only
+        ChatMessage.query.filter_by(user_id=current_user.id).delete()
         db.session.commit()
         logger.debug("Chat history cleared successfully")
 
-        # Return success response with empty history
         return jsonify({
             'message': 'Chat reset successful',
             'history': []
