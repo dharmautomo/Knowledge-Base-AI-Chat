@@ -1,61 +1,4 @@
-/* Sidebar styles */
-.sidebar {
-    width: 250px;
-    height: 100vh;
-    background: #1a1a1a;
-    padding: 1rem;
-    position: fixed;
-    left: 0;
-    top: 0;
-    border-right: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.sidebar-header {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 1rem;
-    margin-bottom: 1.5rem;
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: var(--bs-primary);
-}
-
-.sidebar-menu {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
-
-.sidebar-menu a {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.75rem 1rem;
-    color: rgba(255, 255, 255, 0.7);
-    text-decoration: none;
-    border-radius: 0.5rem;
-    transition: all 0.2s ease;
-}
-
-.sidebar-menu a:hover, .sidebar-menu a.active {
-    background: rgba(255, 255, 255, 0.1);
-    color: #fff;
-}
-
-.sidebar-menu i {
-    font-size: 1.25rem;
-}
-
-/* Main content area */
-.main-content {
-    margin-left: 250px;
-    width: calc(100% - 250px);
-    min-height: 100vh;
-    background: #121212;
-}
-
-/* Chat container styles */
+/* Main container styles */
 .chat-container {
     height: 60vh;
     overflow-y: auto;
@@ -100,7 +43,7 @@
 }
 
 .ai-message {
-    background-color: rgba(255, 255, 255, 0.05);
+    background-color: var(--bs-dark);
     margin-right: auto;
     border-bottom-left-radius: 0.25rem;
 }
@@ -120,10 +63,9 @@
 /* Card styling */
 .card {
     border: none;
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(10px);
-    border-radius: 1rem;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    background: rgba(33, 37, 41, 0.95);
+    backdrop-filter: blur(10px);
 }
 
 .card-body {
@@ -134,7 +76,6 @@
 .btn {
     padding: 0.5rem 1rem;
     font-weight: 500;
-    border-radius: 0.5rem;
     transition: all 0.2s ease;
 }
 
@@ -142,114 +83,17 @@
     transform: translateY(-1px);
 }
 
-.btn-primary {
-    background: var(--bs-primary);
-    border: none;
-}
-
-.btn-outline-danger {
-    border-color: var(--bs-danger);
-    color: var(--bs-danger);
-}
-
-.btn-outline-danger:hover {
-    background: var(--bs-danger);
-    color: #fff;
-}
-
 /* Form control styling */
 .form-control {
     border: 1px solid rgba(255, 255, 255, 0.1);
     background-color: rgba(0, 0, 0, 0.2);
-    border-radius: 0.5rem;
-    transition: all 0.2s ease;
+    transition: border-color 0.2s ease;
 }
 
 .form-control:focus {
     background-color: rgba(0, 0, 0, 0.3);
     border-color: var(--bs-primary);
     box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
-}
-
-/* Upload zone styling */
-.upload-zone {
-    border: 2px dashed rgba(255, 255, 255, 0.2);
-    border-radius: 1rem;
-    padding: 2rem;
-    text-align: center;
-    transition: all 0.3s ease;
-    background: rgba(0, 0, 0, 0.1);
-    cursor: pointer;
-}
-
-.upload-zone:hover {
-    border-color: var(--bs-primary);
-    background: rgba(13, 110, 253, 0.05);
-}
-
-.upload-zone.dragover {
-    border-color: var(--bs-primary);
-    background: rgba(13, 110, 253, 0.1);
-    transform: scale(1.02);
-}
-
-.upload-zone input[type="file"] {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-    opacity: 0;
-    cursor: pointer;
-}
-
-.upload-zone-content {
-    pointer-events: none;
-}
-
-.upload-zone-content i {
-    color: rgba(255, 255, 255, 0.5);
-    transition: color 0.3s ease;
-}
-
-.upload-zone:hover .upload-zone-content i,
-.upload-zone.dragover .upload-zone-content i {
-    color: var(--bs-primary);
-}
-
-/* Selected file display */
-.selected-file {
-    margin-top: 1rem;
-    padding: 0.5rem 1rem;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 0.5rem;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.selected-file i {
-    color: var(--bs-primary);
-}
-
-/* Loading overlay */
-.loading-overlay {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.8);
-    backdrop-filter: blur(5px);
-    z-index: 9999;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-}
-
-.loading-overlay.active {
-    display: flex;
 }
 
 /* Animations */
@@ -264,11 +108,35 @@
     }
 }
 
+/* Loading overlay enhancements */
+.loading-overlay {
+    backdrop-filter: blur(5px);
+    transition: opacity 0.3s ease;
+}
+
+.loading-overlay.active {
+    opacity: 1;
+}
+
+/* Container spacing */
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+/* Title styling */
+h1 {
+    font-weight: 600;
+    color: var(--bs-primary);
+    margin-bottom: 2rem;
+    font-size: 2.5rem;
+}
+
 /* Typing indicator */
 .typing-indicator {
     display: none;
     padding: 1rem;
-    background-color: rgba(255, 255, 255, 0.05);
+    background-color: var(--bs-dark);
     border-radius: 1rem;
     margin-bottom: 1.5rem;
     margin-right: auto;
@@ -294,21 +162,6 @@
     0%, 60%, 100% { transform: translateY(0); }
     30% { transform: translateY(-4px); }
 }
-
-/* Container spacing */
-.container {
-    max-width: 900px;
-    margin: 0 auto;
-}
-
-/* Title styling */
-h1 {
-    font-weight: 600;
-    color: var(--bs-primary);
-    margin-bottom: 2rem;
-    font-size: 2.5rem;
-}
-
 
 /* Drag and Drop styles */
 .upload-zone {
@@ -370,14 +223,4 @@ h1 {
 
 .selected-file i {
     color: var(--bs-primary);
-}
-
-/* Loading overlay enhancements */
-.loading-overlay {
-    backdrop-filter: blur(5px);
-    transition: opacity 0.3s ease;
-}
-
-.loading-overlay.active {
-    opacity: 1;
 }
