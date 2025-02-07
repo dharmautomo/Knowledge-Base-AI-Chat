@@ -2,12 +2,12 @@ import json
 import os
 import logging
 import requests
+import secrets
 from extensions import db
 from flask import Blueprint, redirect, request, url_for, session
 from flask_login import login_required, login_user, logout_user
 from models import User
 from oauthlib.oauth2 import WebApplicationClient
-import secrets
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -144,7 +144,7 @@ def callback():
             logger.debug("User logged in successfully")
             return redirect(url_for("index"))
         else:
-            logger.error("User email not verified by Google")
+            logger.error("User email not available or not verified by Google")
             return "User email not available or not verified by Google.", 400
 
     except Exception as e:

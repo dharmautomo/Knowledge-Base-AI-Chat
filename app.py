@@ -1,11 +1,11 @@
 import os
 import logging
 import uuid
-from flask import Flask, render_template, request, jsonify, redirect, url_for
+from flask import Flask, render_template, request, jsonify, redirect, url_for, session
 from flask_login import LoginManager, login_required, current_user
 from werkzeug.utils import secure_filename
 from utils.openai_helper import process_message, process_document
-from datetime import datetime
+from datetime import datetime, timedelta
 from utils.text_processor import TextProcessor
 from extensions import db
 
@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 # Initialize Flask
 app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "default_secret_key")
+app.permanent_session_lifetime = timedelta(days=5)
 
 # Database configuration
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
