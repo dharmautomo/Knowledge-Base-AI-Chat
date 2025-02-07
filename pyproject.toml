@@ -1,7 +1,7 @@
 [project]
-name = "repl-nix-workspace"
+name = "knowledge-base-ai-chat"
 version = "0.1.0"
-description = "Add your description here"
+description = "An AI-powered knowledge base chat application for processing and interacting with documents through an intelligent web interface"
 requires-python = ">=3.11"
 dependencies = [
     "email-validator>=2.2.0",
