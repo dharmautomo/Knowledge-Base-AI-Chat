@@ -209,3 +209,18 @@ h1 {
 .upload-zone.dragover .upload-zone-content i {
     color: var(--bs-primary);
 }
+
+/* Selected file display */
+.selected-file {
+    margin-top: 1rem;
+    padding: 0.5rem 1rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 0.25rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.selected-file i {
+    color: var(--bs-primary);
+}

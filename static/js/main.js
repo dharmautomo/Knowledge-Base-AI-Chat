@@ -44,6 +44,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (files.length > 0) {
             fileInput.files = files;
+            updateSelectedFileDisplay(files[0]);
             handleFileUpload(files[0]);
         }
     }
@@ -54,6 +55,12 @@ document.addEventListener('DOMContentLoaded', function() {
         if (file) {
             handleFileUpload(file);
         }
+    });
+
+    // File input change handler
+    fileInput.addEventListener('change', () => {
+        const file = fileInput.files[0];
+        updateSelectedFileDisplay(file);
     });
 
     // File upload handler
@@ -92,6 +99,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             await response.json();
             alert('File uploaded and processed successfully!');
+            updateSelectedFileDisplay(null); // Clear the selected file display after successful upload
 
         } catch (error) {
             console.error('Upload error:', error);
@@ -257,5 +265,17 @@ document.addEventListener('DOMContentLoaded', function() {
         history.forEach(message => {
             addMessageToChat(message.content, message.role);
         });
+    }
+
+    function updateSelectedFileDisplay(file) {
+        const selectedFileDiv = document.getElementById('selectedFile');
+        const fileNameSpan = selectedFileDiv.querySelector('span');
+
+        if (file) {
+            fileNameSpan.textContent = file.name;
+            selectedFileDiv.style.display = 'inline-flex';
+        } else {
+            selectedFileDiv.style.display = 'none';
+        }
     }
 });
