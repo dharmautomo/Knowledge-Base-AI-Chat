@@ -33,6 +33,9 @@ For detailed instructions, see:
 https://docs.replit.com/additional-resources/google-auth-in-flask#set-up-your-oauth-app--client
 """)
 
+# Allow OAuth over HTTP for development
+os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+
 client = WebApplicationClient(GOOGLE_CLIENT_ID)
 
 google_auth = Blueprint("google_auth", __name__)
