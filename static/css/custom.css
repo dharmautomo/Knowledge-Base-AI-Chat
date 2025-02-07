@@ -9,20 +9,80 @@
     background: rgba(0, 0, 0, 0.2);
     scrollbar-width: thin;
     scrollbar-color: var(--bs-secondary) transparent;
+    flex: 1;
+    min-height: 250px;
+    margin-bottom: 0;
 }
 
-/* Scrollbar styling */
-.chat-container::-webkit-scrollbar {
-    width: 6px;
+/* Card styling */
+.card {
+    border: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    background: rgba(33, 37, 41, 0.95);
+    backdrop-filter: blur(10px);
+    height: 100%;
 }
 
-.chat-container::-webkit-scrollbar-track {
-    background: transparent;
+.card-body {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
 }
 
-.chat-container::-webkit-scrollbar-thumb {
-    background-color: var(--bs-secondary);
-    border-radius: 3px;
+/* Button styling */
+.btn {
+    padding: 0.75rem 1.5rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+/* Form control styling */
+.form-control {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: rgba(0, 0, 0, 0.2);
+    transition: border-color 0.2s ease;
+    padding: 0.75rem 1rem;
+}
+
+.form-control:focus {
+    background-color: rgba(0, 0, 0, 0.3);
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+}
+
+/* Input group styling */
+.input-group {
+    margin-top: auto;
+    padding-top: 1.5rem;
+}
+
+.input-group .form-control {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    min-height: 48px;
+    resize: none;
+}
+
+.input-group .btn,
+#uploadBtn {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    width: auto;
+    min-width: 120px;
+    height: 48px;
+    padding: 0 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* Message styling */
@@ -48,57 +108,6 @@
     border-bottom-left-radius: 0.25rem;
 }
 
-.message-header {
-    font-size: 0.875rem;
-    color: rgba(255, 255, 255, 0.7);
-    margin-bottom: 0.5rem;
-    font-weight: 500;
-}
-
-.message-content {
-    line-height: 1.5;
-    word-wrap: break-word;
-}
-
-/* Card styling */
-.card {
-    border: none;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    background: rgba(33, 37, 41, 0.95);
-    backdrop-filter: blur(10px);
-    height: 100%;
-}
-
-.card-body {
-    padding: 1.5rem;
-    display: flex;
-    flex-direction: column;
-}
-
-/* Button styling */
-.btn {
-    padding: 0.5rem 1rem;
-    font-weight: 500;
-    transition: all 0.2s ease;
-}
-
-.btn:hover {
-    transform: translateY(-1px);
-}
-
-/* Form control styling */
-.form-control {
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    background-color: rgba(0, 0, 0, 0.2);
-    transition: border-color 0.2s ease;
-}
-
-.form-control:focus {
-    background-color: rgba(0, 0, 0, 0.3);
-    border-color: var(--bs-primary);
-    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
-}
-
 /* Loading overlay */
 .loading-overlay {
     position: fixed;
@@ -113,12 +122,10 @@
     align-items: center;
     flex-direction: column;
     backdrop-filter: blur(5px);
-    transition: opacity 0.3s ease;
 }
 
 .loading-overlay.active {
     display: flex;
-    opacity: 1;
 }
 
 /* Container spacing */
@@ -136,37 +143,6 @@ h1 {
     font-size: 2.5rem;
 }
 
-/* Typing indicator */
-.typing-indicator {
-    display: none;
-    padding: 1rem;
-    background-color: var(--bs-dark);
-    border-radius: 1rem;
-    margin-bottom: 1.5rem;
-    margin-right: auto;
-    border-bottom-left-radius: 0.25rem;
-    max-width: 85%;
-    animation: messageAppear 0.3s ease-out;
-}
-
-.typing-indicator span {
-    display: inline-block;
-    width: 8px;
-    height: 8px;
-    background-color: rgba(255, 255, 255, 0.5);
-    border-radius: 50%;
-    margin-right: 5px;
-    animation: typingBounce 1s infinite ease-in-out;
-}
-
-.typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
-.typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
-
-@keyframes typingBounce {
-    0%, 60%, 100% { transform: translateY(0); }
-    30% { transform: translateY(-4px); }
-}
-
 /* Drag and Drop styles */
 .upload-zone {
     position: relative;
@@ -178,10 +154,11 @@ h1 {
     background: rgba(0, 0, 0, 0.2);
     cursor: pointer;
     height: calc(100% - 60px);
-    min-height: 300px;
+    min-height: 250px;
     display: flex;
     align-items: center;
     justify-content: center;
+    margin-bottom: 1.5rem;
 }
 
 .upload-zone:hover {
@@ -238,10 +215,6 @@ h1 {
 @media (max-width: 991.98px) {
     .chat-container {
         height: 50vh;
-    }
-
-    .upload-zone {
-        height: 300px;
     }
 }
 
