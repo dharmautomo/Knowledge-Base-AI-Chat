@@ -2,7 +2,7 @@ import os
 import logging
 import uuid
 from flask import Flask, render_template, request, jsonify, redirect, url_for, session
-from flask_login import LoginManager, login_required, current_user
+from flask_login import LoginManager, login_required, current_user, login_user, logout_user
 from werkzeug.utils import secure_filename
 from utils.openai_helper import process_message, process_document
 from datetime import datetime, timedelta
@@ -26,11 +26,7 @@ app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     'pool_recycle': 300,    # Recycle connections every 5 minutes
     'pool_timeout': 30,     # Connection timeout of 30 seconds
     'pool_size': 10,        # Maximum pool size
-    'max_overflow': 5,      # Maximum number of connections above pool_size
-    'connect_args': {
-        'sslmode': 'require',  # Force SSL mode
-        'connect_timeout': 10   # Connection attempt timeout
-    }
+    'max_overflow': 5       # Maximum number of connections above pool_size
 }
 
 db.init_app(app)
@@ -38,16 +34,30 @@ db.init_app(app)
 # Initialize Flask-Login with stronger session protection
 login_manager = LoginManager()
 login_manager.init_app(app)
-login_manager.login_view = 'login'
+login_manager.login_view = 'login'  # Changed from string to function name
 login_manager.session_protection = 'strong'
+login_manager.login_message = 'Please log in to access this page.'
+login_manager.login_message_category = 'info'
+
+# Set session configuration for better security and persistence
+app.config.update(
+    SESSION_COOKIE_SECURE=True,
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE='Lax',
+    PERMANENT_SESSION_LIFETIME=timedelta(days=5),
+    REMEMBER_COOKIE_DURATION=timedelta(days=5),
+    REMEMBER_COOKIE_SECURE=True,
+    REMEMBER_COOKIE_HTTPONLY=True,
+    REMEMBER_COOKIE_SAMESITE='Lax'
+)
 
 # Set session configuration
-app.config['SESSION_COOKIE_SECURE'] = True
-app.config['SESSION_COOKIE_HTTPONLY'] = True
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=5)
-app.config['REMEMBER_COOKIE_DURATION'] = timedelta(days=5)
-app.config['REMEMBER_COOKIE_SECURE'] = True
-app.config['REMEMBER_COOKIE_HTTPONLY'] = True
+#app.config['SESSION_COOKIE_SECURE'] = True
+#app.config['SESSION_COOKIE_HTTPONLY'] = True
+#app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=5)
+#app.config['REMEMBER_COOKIE_DURATION'] = timedelta(days=5)
+#app.config['REMEMBER_COOKIE_SECURE'] = True
+#app.config['REMEMBER_COOKIE_HTTPONLY'] = True
 
 # Configure upload settings
 UPLOAD_FOLDER = '/tmp'
@@ -66,12 +76,17 @@ app.register_blueprint(google_auth)
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(int(user_id))
+    try:
+        logger.debug(f"Loading user with ID: {user_id}")
+        return User.query.get(int(user_id))
+    except Exception as e:
+        logger.error(f"Error loading user: {str(e)}")
+        return None
 
-# Custom unauthorized handler
 @login_manager.unauthorized_handler
 def unauthorized():
     logger.debug("Unauthorized access attempt")
+    session['next'] = request.url  # Save the requested URL
     return redirect(url_for('login'))
 
 def allowed_file(filename):

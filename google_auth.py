@@ -79,8 +79,6 @@ def login():
 def callback():
     try:
         logger.debug("Received callback from Google")
-        logger.debug(f"Request URL: {request.url}")
-        logger.debug(f"Request args: {request.args}")
 
         # Verify state parameter
         state = request.args.get('state')
@@ -102,7 +100,6 @@ def callback():
         token_endpoint = google_provider_cfg["token_endpoint"]
         redirect_uri = get_redirect_url()
 
-        logger.debug("Preparing token request")
         token_url, headers, body = client.prepare_token_request(
             token_endpoint,
             authorization_response=request.url.replace('http://', 'https://'),
@@ -144,18 +141,36 @@ def callback():
             user = User.query.filter_by(email=users_email).first()
             if not user:
                 logger.debug("Creating new user")
-                user = User(username=users_name, email=users_email)
-                db.session.add(user)
-                db.session.commit()
+                # Check if username exists and generate a unique one if needed
+                base_username = users_name
+                username = base_username
+                counter = 1
+                while User.query.filter_by(username=username).first():
+                    username = f"{base_username}{counter}"
+                    counter += 1
 
-            # Set session permanent to True
+                user = User(username=username, email=users_email)
+                try:
+                    db.session.add(user)
+                    db.session.commit()
+                    logger.debug(f"Created new user with username: {username}")
+                except Exception as e:
+                    logger.error(f"Error creating user: {str(e)}")
+                    db.session.rollback()
+                    return redirect(url_for("login"))
+
+            # Set session permanent to True and log in user
             session.permanent = True
             login_user(user, remember=True)
             logger.debug("User logged in successfully")
 
-            # Redirect to index page after successful login
-            logger.debug("Redirecting to index page")
-            return redirect(url_for('index'))
+            # Get the next URL from session if available
+            next_url = session.pop('next', None)
+            if not next_url or not next_url.startswith('/'):
+                next_url = url_for('index')
+
+            logger.debug(f"Redirecting to: {next_url}")
+            return redirect(next_url)
         else:
             logger.error("User email not available or not verified by Google")
             return "User email not available or not verified by Google.", 400
