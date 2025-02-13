@@ -171,17 +171,40 @@ document.addEventListener('DOMContentLoaded', function() {
                         .replace(/</g, '&lt;')
                         .replace(/>/g, '&gt;');
 
+                    if (line.trim() === '') {
+                        return '<div class="paragraph-break"></div>';
+                    }
                     if (line.trim().startsWith('-') || line.trim().startsWith('*')) {
                         return `<div class="bullet-point">${escapedLine}</div>`;
                     }
                     if (/^\d+\./.test(line.trim())) {
                         return `<div class="numbered-item">${escapedLine}</div>`;
                     }
-                    return `<div>${escapedLine}</div>`;
+                    return `<div class="text-line">${escapedLine}</div>`;
                 })
                 .join('');
         } else {
-            content.textContent = message;
+            // For user messages, maintain simpler formatting
+            const formattedMessage = message
+                .split('\n')
+                .map(line => line.trim())
+                .join('\n')
+                .replace(/\n{3,}/g, '\n\n')
+                .trim();
+
+            content.innerHTML = formattedMessage
+                .split('\n')
+                .map(line => {
+                    const escapedLine = line
+                        .replace(/&/g, '&amp;')
+                        .replace(/</g, '&lt;')
+                        .replace(/>/g, '&gt;');
+
+                    return line.trim() === '' ? 
+                        '<div class="paragraph-break"></div>' : 
+                        `<div class="text-line">${escapedLine}</div>`;
+                })
+                .join('');
         }
 
         messageDiv.appendChild(header);
