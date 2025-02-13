@@ -301,7 +301,7 @@ h1 {
 
 /* File list specific styles */
 .files-list {
-    max-height: 30vh;
+    max-height: 25vh;
     overflow-y: auto;
     background: rgb(243, 243, 243);
     border-radius: 0.5rem;
@@ -387,7 +387,7 @@ h1 {
     transition: all 0.3s ease;
     background: white;
     cursor: pointer;
-    height: 40vh;
+    height: 35vh;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -430,11 +430,11 @@ h1 {
     }
 
     .upload-zone {
-        height: 30vh;
+        height: 25vh;
     }
 
     .files-list {
-        max-height: 25vh;
+        max-height: 20vh;
     }
 }
 
