@@ -48,7 +48,7 @@ h1 {
 .chat-container {
     background: white;
     border: 1px solid var(--border-color);
-    height: 60vh; /* Increased to 60vh */
+    height: 55vh; /* Decreased to 55vh */
     overflow-y: auto;
     border-radius: 0.5rem;
     padding: 1.5rem;
@@ -301,7 +301,7 @@ h1 {
 
 /* File list specific styles */
 .files-list {
-    max-height: 25vh;
+    max-height: 22vh;
     overflow-y: auto;
     background: rgb(243, 243, 243);
     border-radius: 0.5rem;
@@ -387,7 +387,7 @@ h1 {
     transition: all 0.3s ease;
     background: white;
     cursor: pointer;
-    height: 60vh;
+    height: 55vh;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -445,13 +445,13 @@ h1 {
 /* Responsive adjustments */
 @media (max-width: 991.98px) {
     .chat-container {
-        height: 45vh; /* Proportionally increased for mobile */
+        height: 40vh; /* Proportionally adjusted for mobile */
     }
     .upload-zone {
-        height: 45vh;
+        height: 40vh;
     }
     .files-list {
-        max-height: 20vh;
+        max-height: 18vh;
     }
 }
 
