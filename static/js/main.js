@@ -147,6 +147,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const img = document.createElement('img');
             img.src = '/static/images/lucky-indah-keramik-logo.png';
             img.alt = 'Lucky Indah Keramik AI';
+            img.style.backgroundColor = 'transparent';
             avatar.appendChild(img);
         } else {
             // User avatar - using initials or icon
