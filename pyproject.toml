@@ -25,4 +25,5 @@ dependencies = [
     "oauthlib>=3.2.2",
     "requests>=2.32.3",
     "sqlalchemy>=2.0.37",
+    "trafilatura>=2.0.0",
 ]
