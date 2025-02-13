@@ -47,12 +47,22 @@
                             Upload
                         </button>
                         <div class="mt-4">
-                            <h6 class="card-subtitle mb-3">
+                            <h6 class="card-subtitle mb-3 text-muted">
                                 <i class="bi bi-files me-2"></i>
                                 Uploaded Files
                             </h6>
                             <div id="filesList" class="files-list">
-                                <!-- Files will be dynamically added here -->
+                                <!-- Files will be dynamically added here with this structure:
+                                <div class="file-item">
+                                    <div class="file-info">
+                                        <div class="file-name">filename.pdf</div>
+                                        <div class="file-time">2/13/2025, 6:25:22 AM</div>
+                                    </div>
+                                    <button class="delete-btn">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                                -->
                             </div>
                         </div>
                     </div>
