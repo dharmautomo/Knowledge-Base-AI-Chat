@@ -56,9 +56,53 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // File input change handler
+    // File input change handler - Updated for better UX
     fileInput.addEventListener('change', () => {
         const file = fileInput.files[0];
+        if (file) {
+            const fileExtension = file.name.toLowerCase().split('.').pop();
+            if (!['txt', 'pdf'].includes(fileExtension)) {
+                alert('Please upload only TXT or PDF files.');
+                fileInput.value = '';
+                dropZone.classList.remove('has-file');
+                return;
+            }
+            dropZone.classList.add('has-file');
+            const fileName = document.createElement('div');
+            fileName.className = 'selected-file';
+            fileName.innerHTML = `
+                <i class="bi bi-file-text me-2"></i>
+                ${file.name}
+                <button class="clear-file" title="Remove file">
+                    <i class="bi bi-x"></i>
+                </button>
+            `;
+
+            // Remove any existing selected file display
+            const existingFileName = dropZone.querySelector('.selected-file');
+            if (existingFileName) {
+                existingFileName.remove();
+            }
+
+            const uploadContent = dropZone.querySelector('.upload-zone-content');
+            dropZone.insertBefore(fileName, uploadContent);
+
+            // Add clear button functionality
+            const clearBtn = fileName.querySelector('.clear-file');
+            clearBtn.onclick = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                fileInput.value = '';
+                dropZone.classList.remove('has-file');
+                fileName.remove();
+            };
+        } else {
+            dropZone.classList.remove('has-file');
+            const existingFileName = dropZone.querySelector('.selected-file');
+            if (existingFileName) {
+                existingFileName.remove();
+            }
+        }
     });
 
     // File upload handler

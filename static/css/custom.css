@@ -379,7 +379,7 @@ h1 {
     background-color: rgba(220, 53, 69, 0.1);
 }
 
-/* Upload zone styles */
+/* Upload zone styles - Updated with selected state */
 .upload-zone {
     position: relative;
     border: 2px dashed var(--border-color);
@@ -393,25 +393,52 @@ h1 {
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-direction: column;
 }
 
-.upload-zone:hover {
+.upload-zone.has-file {
     border-color: var(--primary-color);
-    transform: scale(1.01);
     background: rgba(193, 168, 139, 0.05);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
-.upload-zone:hover .upload-zone-content i {
-    transform: translateY(-3px);
-    color: var(--secondary-color);
+.upload-zone .selected-file {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    right: 1rem;
+    background: white;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--primary-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    color: var(--text-color);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-.upload-zone.dragover {
-    border-color: var(--secondary-color);
-    background: rgba(193, 168, 139, 0.1);
-    transform: scale(1.02);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+.upload-zone .selected-file .clear-file {
+    background: none;
+    border: none;
+    color: #dc3545;
+    cursor: pointer;
+    padding: 0.25rem;
+    margin-left: 0.5rem;
+    border-radius: 0.25rem;
+    transition: all 0.2s ease;
+}
+
+.upload-zone .selected-file .clear-file:hover {
+    background-color: rgba(220, 53, 69, 0.1);
+}
+
+.upload-zone.has-file .upload-zone-content {
+    opacity: 0.6;
+}
+
+.upload-zone.has-file:hover {
+    transform: none;
 }
 
 .upload-zone input[type="file"] {
