@@ -44,7 +44,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (files.length > 0) {
             fileInput.files = files;
-            updateSelectedFileDisplay(files[0]);
             handleFileUpload(files[0]);
         }
     }
@@ -60,7 +59,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // File input change handler
     fileInput.addEventListener('change', () => {
         const file = fileInput.files[0];
-        updateSelectedFileDisplay(file);
     });
 
     // File upload handler
@@ -99,7 +97,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             await response.json();
             alert('File uploaded and processed successfully!');
-            updateSelectedFileDisplay(null);
+            fileInput.value = ''; // Clear the file input
             loadFiles(); // Refresh the files list
 
         } catch (error) {
@@ -108,7 +106,6 @@ document.addEventListener('DOMContentLoaded', function() {
         } finally {
             hideLoading();
             uploadBtn.disabled = false;
-            fileInput.value = '';
         }
     }
 
@@ -357,36 +354,13 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    function updateSelectedFileDisplay(file) {
-        const selectedFileDiv = document.getElementById('selectedFile');
-        const fileNameSpan = selectedFileDiv.querySelector('span');
-
-        if (file) {
-            fileNameSpan.textContent = file.name;
-            selectedFileDiv.style.display = 'inline-flex';
-        } else {
-            selectedFileDiv.style.display = 'none';
-        }
-    }
-
-    async function loadFiles() {
-        try {
-            const response = await fetch('/files');
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.error || 'Error loading files');
-            }
-
-            updateFilesList(data.files);
-        } catch (error) {
-            console.error('Error loading files:', error);
-            alert('Error loading files. Please try again.');
-        }
-    }
-
     function updateFilesList(files) {
         const filesListDiv = document.getElementById('filesList');
+        if (!filesListDiv) {
+            console.error('Files list container not found');
+            return;
+        }
+
         filesListDiv.innerHTML = '';
 
         if (files.length === 0) {
@@ -396,18 +370,33 @@ document.addEventListener('DOMContentLoaded', function() {
 
         files.forEach(file => {
             const fileDiv = document.createElement('div');
-            fileDiv.className = 'file-item d-flex justify-content-between align-items-center p-2 mb-2';
+            fileDiv.className = 'file-item';
 
             const fileInfo = document.createElement('div');
-            fileInfo.className = 'd-flex align-items-center';
-            fileInfo.innerHTML = `
-                <i class="bi bi-file-text me-2"></i>
-                <span>${file.original_filename}</span>
-                <small class="text-muted ms-2">${new Date(file.uploaded_at).toLocaleString()}</small>
-            `;
+            fileInfo.className = 'file-info';
+
+            const icon = document.createElement('i');
+            icon.className = 'bi bi-file-text file-icon';
+
+            const details = document.createElement('div');
+            details.className = 'file-details';
+
+            const fileName = document.createElement('p');
+            fileName.className = 'file-name';
+            fileName.textContent = file.original_filename;
+
+            const fileTime = document.createElement('p');
+            fileTime.className = 'file-time';
+            fileTime.textContent = new Date(file.uploaded_at).toLocaleString();
+
+            details.appendChild(fileName);
+            details.appendChild(fileTime);
+
+            fileInfo.appendChild(icon);
+            fileInfo.appendChild(details);
 
             const deleteBtn = document.createElement('button');
-            deleteBtn.className = 'btn btn-danger btn-sm';
+            deleteBtn.className = 'delete-btn';
             deleteBtn.innerHTML = '<i class="bi bi-trash"></i>';
             deleteBtn.onclick = () => deleteFile(file.id);
 
