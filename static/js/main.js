@@ -145,7 +145,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (role === 'assistant') {
             const img = document.createElement('img');
-            img.src = '/static/images/lucky-indah-logo.png';
+            img.src = '/static/images/lucky-indah-keramik-logo.png';
             img.alt = 'Lucky Indah Keramik AI';
             avatar.appendChild(img);
         } else {
