@@ -80,74 +80,56 @@ document.addEventListener('DOMContentLoaded', function() {
                 </button>
             `;
 
-            // Add upload prompt message
-            const uploadPrompt = document.createElement('div');
-            uploadPrompt.className = 'upload-prompt';
-            uploadPrompt.innerHTML = `
-                <i class="bi bi-arrow-down-circle-fill me-2"></i>
-                Click the Upload button below to process the file
-            `;
+        // Add upload prompt message with shorter text
+        const uploadPrompt = document.createElement('div');
+        uploadPrompt.className = 'upload-prompt';
+        uploadPrompt.innerHTML = `
+            <i class="bi bi-arrow-down-circle-fill me-2"></i>
+            Click the Upload button
+        `;
 
-            // Remove any existing selected file display and prompt
-            const existingFileName = dropZone.querySelector('.selected-file');
-            const existingPrompt = dropZone.querySelector('.upload-prompt');
-            if (existingFileName) {
-                existingFileName.remove();
-            }
-            if (existingPrompt) {
-                existingPrompt.remove();
-            }
+        // Remove any existing selected file display and prompt
+        const existingFileName = dropZone.querySelector('.selected-file');
+        const existingPrompt = dropZone.querySelector('.upload-prompt');
+        if (existingFileName) {
+            existingFileName.remove();
+        }
+        if (existingPrompt) {
+            existingPrompt.remove();
+        }
 
-            const uploadContent = dropZone.querySelector('.upload-zone-content');
-            dropZone.insertBefore(fileName, uploadContent);
-            dropZone.appendChild(uploadPrompt);
+        const uploadContent = dropZone.querySelector('.upload-zone-content');
+        dropZone.insertBefore(fileName, uploadContent);
+        dropZone.appendChild(uploadPrompt);
 
-            // Add clear button functionality
-            const clearBtn = fileName.querySelector('.clear-file');
-            clearBtn.onclick = (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                fileInput.value = '';
-                dropZone.classList.remove('has-file');
-                uploadBtn.classList.remove('ready');
-                fileName.remove();
-                if (existingPrompt) {
-                    existingPrompt.remove();
-                }
-            };
-        } else {
+        // Add clear button functionality
+        const clearBtn = fileName.querySelector('.clear-file');
+        clearBtn.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            fileInput.value = '';
             dropZone.classList.remove('has-file');
             uploadBtn.classList.remove('ready');
-            const existingFileName = dropZone.querySelector('.selected-file');
-            const existingPrompt = dropZone.querySelector('.upload-prompt');
-            if (existingFileName) {
-                existingFileName.remove();
-            }
+            fileName.remove();
             if (existingPrompt) {
                 existingPrompt.remove();
             }
+        };
+    } else {
+        dropZone.classList.remove('has-file');
+        uploadBtn.classList.remove('ready');
+        const existingFileName = dropZone.querySelector('.selected-file');
+        const existingPrompt = dropZone.querySelector('.upload-prompt');
+        if (existingFileName) {
+            existingFileName.remove();
         }
-    });
+        if (existingPrompt) {
+            existingPrompt.remove();
+        }
+    }
+});
 
     // File upload handler
-    function handleFileUpload(file) {
-        if (!file) {
-            alert('Please select a file first.');
-            return;
-        }
-
-        const fileExtension = file.name.toLowerCase().split('.').pop();
-        if (!['txt', 'pdf'].includes(fileExtension)) {
-            alert('Please upload only TXT or PDF files.');
-            return;
-        }
-
-        const formData = new FormData();
-        formData.append('file', file);
-
-        uploadFile(formData);
-    }
-
     async function uploadFile(formData) {
         try {
             showLoading();
@@ -165,7 +147,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
             await response.json();
             alert('File uploaded and processed successfully!');
-            fileInput.value = ''; // Clear the file input
+
+            // Clear the UI after successful upload
+            fileInput.value = '';
+            const selectedFile = dropZone.querySelector('.selected-file');
+            const uploadPrompt = dropZone.querySelector('.upload-prompt');
+            if (selectedFile) selectedFile.remove();
+            if (uploadPrompt) uploadPrompt.remove();
+            dropZone.classList.remove('has-file');
+            uploadBtn.classList.remove('ready');
+
             loadFiles(); // Refresh the files list
 
         } catch (error) {
@@ -175,6 +166,24 @@ document.addEventListener('DOMContentLoaded', function() {
             hideLoading();
             uploadBtn.disabled = false;
         }
+    }
+
+    function handleFileUpload(file) {
+        if (!file) {
+            alert('Please select a file first.');
+            return;
+        }
+
+        const fileExtension = file.name.toLowerCase().split('.').pop();
+        if (!['txt', 'pdf'].includes(fileExtension)) {
+            alert('Please upload only TXT or PDF files.');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        uploadFile(formData);
     }
 
     function showLoading() {
