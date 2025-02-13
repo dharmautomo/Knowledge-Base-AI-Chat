@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     const fileInput = document.getElementById('fileInput');
+    const uploadBtn = document.getElementById('uploadBtn');
     const messageInput = document.getElementById('messageInput');
     const sendBtn = document.getElementById('sendBtn');
     const chatContainer = document.getElementById('chatContainer');
@@ -47,16 +48,21 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // File input change handler - now automatically uploads
-    fileInput.addEventListener('change', () => {
+    // Modified upload button click handler
+    uploadBtn.addEventListener('click', () => {
         const file = fileInput.files[0];
         if (file) {
             handleFileUpload(file);
         }
     });
 
+    // File input change handler
+    fileInput.addEventListener('change', () => {
+        const file = fileInput.files[0];
+    });
+
     // File upload handler
-    async function handleFileUpload(file) {
+    function handleFileUpload(file) {
         if (!file) {
             alert('Please select a file first.');
             return;
@@ -71,8 +77,14 @@ document.addEventListener('DOMContentLoaded', function() {
         const formData = new FormData();
         formData.append('file', file);
 
+        uploadFile(formData);
+    }
+
+    async function uploadFile(formData) {
         try {
             showLoading();
+            uploadBtn.disabled = true;
+
             const response = await fetch('/upload', {
                 method: 'POST',
                 body: formData
@@ -93,6 +105,7 @@ document.addEventListener('DOMContentLoaded', function() {
             alert('Error uploading file: ' + error.message);
         } finally {
             hideLoading();
+            uploadBtn.disabled = false;
         }
     }
 
@@ -115,6 +128,7 @@ document.addEventListener('DOMContentLoaded', function() {
         typingIndicator.style.display = 'none';
     }
 
+    // Modified addMessageToChat function
     function addMessageToChat(message, role) {
         const messageDiv = document.createElement('div');
         messageDiv.className = `message ${role === 'user' ? 'user-message' : 'ai-message'}`;
@@ -432,5 +446,5 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     loadFiles(); // Load files when page loads
-    loadChatHistory(); // Load initial chat history
+    loadChatHistory(); //load initial chat history.
 });
