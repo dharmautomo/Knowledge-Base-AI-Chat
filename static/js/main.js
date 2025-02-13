@@ -354,6 +354,22 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    async function loadFiles() {
+        try {
+            const response = await fetch('/files');
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Error loading files');
+            }
+
+            updateFilesList(data.files);
+        } catch (error) {
+            console.error('Error loading files:', error);
+            alert('Error loading files. Please try again.');
+        }
+    }
+
     function updateFilesList(files) {
         const filesListDiv = document.getElementById('filesList');
         if (!filesListDiv) {
