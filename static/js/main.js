@@ -229,7 +229,12 @@ document.addEventListener('DOMContentLoaded', function() {
         messageDiv.appendChild(header);
         messageDiv.appendChild(content);
 
-        const messageList = chatContainer.querySelector('.message-list');
+        let messageList = chatContainer.querySelector('.message-list');
+        if (!messageList) {
+            messageList = document.createElement('div');
+            messageList.className = 'message-list';
+            chatContainer.appendChild(messageList);
+        }
         messageList.appendChild(messageDiv);
         chatContainer.scrollTop = chatContainer.scrollHeight;
     }
@@ -436,10 +441,5 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     loadFiles(); // Load files when page loads
-    //Added to ensure message-list div exists before appending messages.  This is crucial for the updated addMessageToChat function.
-    const messageListDiv = document.createElement('div');
-    messageListDiv.className = 'message-list';
-    chatContainer.appendChild(messageListDiv);
-
     loadChatHistory(); //load initial chat history.
 });
