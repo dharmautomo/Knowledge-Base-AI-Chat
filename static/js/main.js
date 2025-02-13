@@ -131,6 +131,7 @@ document.addEventListener('DOMContentLoaded', function() {
         typingIndicator.style.display = 'none';
     }
 
+    // Modify the addMessageToChat function to better handle formatting
     function addMessageToChat(message, role) {
         const messageDiv = document.createElement('div');
         messageDiv.className = `message ${role === 'user' ? 'user-message' : 'ai-message'}`;
@@ -142,15 +143,43 @@ document.addEventListener('DOMContentLoaded', function() {
         const content = document.createElement('div');
         content.className = 'message-content';
 
-        // Preserve formatting for AI messages
         if (role === 'assistant') {
-            // Preserve line breaks and formatting
-            content.style.whiteSpace = 'pre-wrap';
-            // Clean up extra whitespace while preserving intentional formatting
+            // Format AI messages with proper spacing and structure
             const formattedMessage = message
-                .replace(/\n{3,}/g, '\n\n')  // Replace multiple newlines with double newline
+                .split('\n')
+                .map(line => {
+                    // Add bullet points for lines starting with "-" or "*"
+                    if (line.trim().startsWith('-') || line.trim().startsWith('*')) {
+                        return line.trim();
+                    }
+                    // Add spacing for numbered lists
+                    if (/^\d+\./.test(line.trim())) {
+                        return line.trim();
+                    }
+                    return line;
+                })
+                .join('\n')
+                .replace(/\n{3,}/g, '\n\n') // Replace multiple newlines with double newline
                 .trim();
-            content.textContent = formattedMessage;
+
+            content.innerHTML = formattedMessage
+                .split('\n')
+                .map(line => {
+                    // Escape HTML but preserve basic formatting
+                    const escapedLine = line
+                        .replace(/&/g, '&amp;')
+                        .replace(/</g, '&lt;')
+                        .replace(/>/g, '&gt;');
+
+                    if (line.trim().startsWith('-') || line.trim().startsWith('*')) {
+                        return `<div class="bullet-point">${escapedLine}</div>`;
+                    }
+                    if (/^\d+\./.test(line.trim())) {
+                        return `<div class="numbered-item">${escapedLine}</div>`;
+                    }
+                    return `<div>${escapedLine}</div>`;
+                })
+                .join('');
         } else {
             content.textContent = message;
         }
@@ -158,7 +187,6 @@ document.addEventListener('DOMContentLoaded', function() {
         messageDiv.appendChild(header);
         messageDiv.appendChild(content);
 
-        // Insert before typing indicator
         const messageList = chatContainer.querySelector('.message-list');
         messageList.appendChild(messageDiv);
         chatContainer.scrollTop = chatContainer.scrollHeight;

@@ -28,7 +28,7 @@
 /* Message styling */
 .message {
     margin-bottom: 1.5rem;
-    padding: 1rem;
+    padding: 1.25rem;
     border-radius: 1rem;
     max-width: 85%;
     transition: transform 0.2s ease;
@@ -50,20 +50,49 @@
     margin-right: auto;
     border-bottom-left-radius: 0.25rem;
     white-space: pre-wrap;
+    font-size: 0.95rem;
+    line-height: 1.6;
 }
 
 .message-header {
     font-size: 0.875rem;
     color: rgba(255, 255, 255, 0.7);
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
     font-weight: 500;
+    letter-spacing: 0.5px;
 }
 
+/* Message content formatting */
 .message-content {
     line-height: 1.6;
     word-wrap: break-word;
     white-space: pre-wrap;
 }
+
+.message-content div {
+    margin: 0.25rem 0;
+}
+
+.message-content .bullet-point {
+    padding-left: 1.5rem;
+    position: relative;
+}
+
+.message-content .bullet-point::before {
+    content: "•";
+    position: absolute;
+    left: 0.5rem;
+    color: var(--bs-primary);
+}
+
+.message-content .numbered-item {
+    padding-left: 1.5rem;
+}
+
+.ai-message .message-content {
+    color: #e9ecef;
+}
+
 
 /* Chat container styles */
 .chat-container {
