@@ -138,7 +138,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const header = document.createElement('div');
         header.className = 'message-header';
-        header.textContent = role === 'user' ? 'You' : 'AI';
+        header.textContent = role === 'user' ? 'You' : 'Lucky Indah Keramik AI';
 
         const content = document.createElement('div');
         content.className = 'message-content';
@@ -200,8 +200,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         .replace(/</g, '&lt;')
                         .replace(/>/g, '&gt;');
 
-                    return line.trim() === '' ? 
-                        '<div class="paragraph-break"></div>' : 
+                    return line.trim() === '' ?
+                        '<div class="paragraph-break"></div>' :
                         `<div class="text-line">${escapedLine}</div>`;
                 })
                 .join('');
