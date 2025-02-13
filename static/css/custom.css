@@ -29,6 +29,7 @@ body {
     border: 1px solid var(--border-color);
     border-radius: 12px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    height: 100%;
 }
 
 .container-fluid {
@@ -47,14 +48,15 @@ h1 {
 /* Chat container styles */
 .chat-container {
     background: white;
-    border: 1px solid var(--border-color);
-    height: 55vh; /* Decreased to 55vh */
+    border: none;
+    height: 55vh;
     overflow-y: auto;
     border-radius: 0.5rem;
     padding: 1.5rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 0;
     scrollbar-width: thin;
     scrollbar-color: var(--bs-secondary) transparent;
+    flex-grow: 1;
 }
 
 /* Scrollbar styling */
@@ -442,10 +444,34 @@ h1 {
     color: var(--secondary-color);
 }
 
+/* Add/modify these styles in the existing CSS file */
+.input-group {
+    border-top: 1px solid var(--border-color);
+    padding-top: 1rem;
+}
+
+.input-group textarea {
+    border: 1px solid var(--border-color);
+    border-radius: 8px 0 0 8px !important;
+    resize: none;
+    padding: 0.75rem 1rem;
+    line-height: 1.5;
+    font-size: 0.95rem;
+}
+
+.input-group .btn {
+    border-radius: 0 8px 8px 0;
+    padding: 0.75rem 1.5rem;
+}
+
+.input-group .btn i {
+    font-size: 1.1rem;
+}
+
 /* Responsive adjustments */
 @media (max-width: 991.98px) {
     .chat-container {
-        height: 40vh; /* Proportionally adjusted for mobile */
+        height: 40vh;
     }
     .upload-zone {
         height: 40vh;
