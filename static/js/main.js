@@ -141,13 +141,26 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const content = document.createElement('div');
         content.className = 'message-content';
-        content.textContent = message;
+
+        // Preserve formatting for AI messages
+        if (role === 'assistant') {
+            // Preserve line breaks and formatting
+            content.style.whiteSpace = 'pre-wrap';
+            // Clean up extra whitespace while preserving intentional formatting
+            const formattedMessage = message
+                .replace(/\n{3,}/g, '\n\n')  // Replace multiple newlines with double newline
+                .trim();
+            content.textContent = formattedMessage;
+        } else {
+            content.textContent = message;
+        }
 
         messageDiv.appendChild(header);
         messageDiv.appendChild(content);
 
         // Insert before typing indicator
-        chatContainer.insertBefore(messageDiv, typingIndicator);
+        const messageList = chatContainer.querySelector('.message-list');
+        messageList.appendChild(messageDiv);
         chatContainer.scrollTop = chatContainer.scrollHeight;
     }
 
@@ -259,8 +272,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function updateChatDisplay(history) {
         // Clear all messages but keep typing indicator
-        while (chatContainer.firstChild && chatContainer.firstChild !== typingIndicator) {
-            chatContainer.removeChild(chatContainer.firstChild);
+        const messageList = chatContainer.querySelector('.message-list');
+        if (messageList) {
+            messageList.innerHTML = '';
         }
 
         history.forEach(message => {
@@ -352,4 +366,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     loadFiles(); // Load files when page loads
+    //Added to ensure message-list div exists before appending messages.  This is crucial for the updated addMessageToChat function.
+    const messageListDiv = document.createElement('div');
+    messageListDiv.className = 'message-list';
+    chatContainer.appendChild(messageListDiv);
+
+    loadChatHistory(); //load initial chat history.
 });

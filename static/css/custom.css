@@ -34,18 +34,22 @@
     transition: transform 0.2s ease;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     animation: messageAppear 0.3s ease-out;
+    line-height: 1.6;
+    font-size: 1rem;
 }
 
 .user-message {
     background-color: var(--bs-primary);
     margin-left: auto;
     border-bottom-right-radius: 0.25rem;
+    color: #fff;
 }
 
 .ai-message {
     background-color: var(--bs-dark);
     margin-right: auto;
     border-bottom-left-radius: 0.25rem;
+    white-space: pre-wrap;
 }
 
 .message-header {
@@ -56,8 +60,39 @@
 }
 
 .message-content {
-    line-height: 1.5;
+    line-height: 1.6;
     word-wrap: break-word;
+    white-space: pre-wrap;
+}
+
+/* Chat container styles */
+.chat-container {
+    height: 60vh;
+    overflow-y: auto;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    background: rgba(0, 0, 0, 0.2);
+    scrollbar-width: thin;
+    scrollbar-color: var(--bs-secondary) transparent;
+}
+
+.message-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* Animation for new messages */
+@keyframes messageAppear {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* Card styling */
