@@ -48,7 +48,7 @@ h1 {
 .chat-container {
     background: white;
     border: 1px solid var(--border-color);
-    height: 70vh; /* Increased to match Upload Document section */
+    height: 50vh; /* Adjusted to match Upload Document section */
     overflow-y: auto;
     border-radius: 0.5rem;
     padding: 1.5rem;
@@ -445,13 +445,11 @@ h1 {
 /* Responsive adjustments */
 @media (max-width: 991.98px) {
     .chat-container {
-        height: 55vh;
+        height: 35vh;
     }
-
     .upload-zone {
         height: 35vh;
     }
-
     .files-list {
         max-height: 15vh;
     }
