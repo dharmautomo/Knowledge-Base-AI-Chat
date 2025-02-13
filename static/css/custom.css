@@ -48,7 +48,7 @@ h1 {
 .chat-container {
     background: white;
     border: 1px solid var(--border-color);
-    height: 50vh; /* Adjusted to match Upload Document section */
+    height: 60vh; /* Increased to 60vh */
     overflow-y: auto;
     border-radius: 0.5rem;
     padding: 1.5rem;
@@ -445,7 +445,7 @@ h1 {
 /* Responsive adjustments */
 @media (max-width: 991.98px) {
     .chat-container {
-        height: 35vh;
+        height: 45vh; /* Proportionally increased for mobile */
     }
     .upload-zone {
         height: 35vh;
