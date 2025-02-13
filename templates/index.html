@@ -22,7 +22,6 @@
     </div>
 
     <div class="row">
-        <!-- File Upload Section -->
         <div class="col-lg-4 mb-4 mb-lg-0">
             <div class="card">
                 <div class="card-body p-4">
@@ -42,32 +41,13 @@
                         </div>
                     </div>
 
-                    <div class="d-grid mb-4">
-                        <button class="btn btn-primary" id="uploadBtn">
-                            <i class="bi bi-cloud-upload me-2"></i>
-                            Upload
-                        </button>
-                    </div>
-
                     <div id="filesList" class="files-list">
-                        <div class="file-item">
-                            <div class="file-info">
-                                <i class="bi bi-file-text file-icon"></i>
-                                <div class="file-details">
-                                    <p class="file-name">DeepSeek_R1_copy.pdf</p>
-                                    <p class="file-time">2/13/2025, 6:25:22 AM</p>
-                                </div>
-                            </div>
-                            <button class="delete-btn" title="Delete file">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </div>
+                        <!-- Files will be listed here dynamically -->
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Chat Section -->
         <div class="col-lg-8">
             <div class="card h-100">
                 <div class="card-body p-4 d-flex flex-column">
@@ -106,7 +86,6 @@
     </div>
 </div>
 
-<!-- Loading Overlay -->
 <div class="loading-overlay" id="loadingOverlay">
     <div class="spinner-border text-primary mb-3" role="status">
         <span class="visually-hidden">Loading...</span>
