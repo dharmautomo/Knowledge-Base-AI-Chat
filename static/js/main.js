@@ -131,14 +131,35 @@ document.addEventListener('DOMContentLoaded', function() {
         typingIndicator.style.display = 'none';
     }
 
-    // Modify the addMessageToChat function to better handle formatting
+    // Modified addMessageToChat function
     function addMessageToChat(message, role) {
         const messageDiv = document.createElement('div');
         messageDiv.className = `message ${role === 'user' ? 'user-message' : 'ai-message'}`;
 
         const header = document.createElement('div');
         header.className = 'message-header';
-        header.textContent = role === 'user' ? 'You' : 'Lucky Indah Keramik AI';
+
+        // Add avatar container
+        const avatar = document.createElement('div');
+        avatar.className = 'message-avatar';
+
+        if (role === 'assistant') {
+            const img = document.createElement('img');
+            img.src = '/static/images/lucky-indah-logo.png';
+            img.alt = 'Lucky Indah Keramik AI';
+            avatar.appendChild(img);
+        } else {
+            // User avatar - using initials or icon
+            const icon = document.createElement('i');
+            icon.className = 'bi bi-person-fill';
+            avatar.appendChild(icon);
+        }
+
+        const name = document.createElement('span');
+        name.textContent = role === 'user' ? 'You' : 'Lucky Indah Keramik AI';
+
+        header.appendChild(avatar);
+        header.appendChild(name);
 
         const content = document.createElement('div');
         content.className = 'message-content';
@@ -148,24 +169,21 @@ document.addEventListener('DOMContentLoaded', function() {
             const formattedMessage = message
                 .split('\n')
                 .map(line => {
-                    // Add bullet points for lines starting with "-" or "*"
                     if (line.trim().startsWith('-') || line.trim().startsWith('*')) {
                         return line.trim();
                     }
-                    // Add spacing for numbered lists
                     if (/^\d+\./.test(line.trim())) {
                         return line.trim();
                     }
                     return line;
                 })
                 .join('\n')
-                .replace(/\n{3,}/g, '\n\n') // Replace multiple newlines with double newline
+                .replace(/\n{3,}/g, '\n\n')
                 .trim();
 
             content.innerHTML = formattedMessage
                 .split('\n')
                 .map(line => {
-                    // Escape HTML but preserve basic formatting
                     const escapedLine = line
                         .replace(/&/g, '&amp;')
                         .replace(/</g, '&lt;')
