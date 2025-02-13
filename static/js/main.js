@@ -65,9 +65,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 alert('Please upload only TXT or PDF files.');
                 fileInput.value = '';
                 dropZone.classList.remove('has-file');
+                uploadBtn.classList.remove('ready');
                 return;
             }
             dropZone.classList.add('has-file');
+            uploadBtn.classList.add('ready');
             const fileName = document.createElement('div');
             fileName.className = 'selected-file';
             fileName.innerHTML = `
@@ -78,14 +80,27 @@ document.addEventListener('DOMContentLoaded', function() {
                 </button>
             `;
 
-            // Remove any existing selected file display
+            // Add upload prompt message
+            const uploadPrompt = document.createElement('div');
+            uploadPrompt.className = 'upload-prompt';
+            uploadPrompt.innerHTML = `
+                <i class="bi bi-arrow-down-circle-fill me-2"></i>
+                Click the Upload button below to process the file
+            `;
+
+            // Remove any existing selected file display and prompt
             const existingFileName = dropZone.querySelector('.selected-file');
+            const existingPrompt = dropZone.querySelector('.upload-prompt');
             if (existingFileName) {
                 existingFileName.remove();
+            }
+            if (existingPrompt) {
+                existingPrompt.remove();
             }
 
             const uploadContent = dropZone.querySelector('.upload-zone-content');
             dropZone.insertBefore(fileName, uploadContent);
+            dropZone.appendChild(uploadPrompt);
 
             // Add clear button functionality
             const clearBtn = fileName.querySelector('.clear-file');
@@ -94,13 +109,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 e.stopPropagation();
                 fileInput.value = '';
                 dropZone.classList.remove('has-file');
+                uploadBtn.classList.remove('ready');
                 fileName.remove();
+                if (existingPrompt) {
+                    existingPrompt.remove();
+                }
             };
         } else {
             dropZone.classList.remove('has-file');
+            uploadBtn.classList.remove('ready');
             const existingFileName = dropZone.querySelector('.selected-file');
+            const existingPrompt = dropZone.querySelector('.upload-prompt');
             if (existingFileName) {
                 existingFileName.remove();
+            }
+            if (existingPrompt) {
+                existingPrompt.remove();
             }
         }
     });
