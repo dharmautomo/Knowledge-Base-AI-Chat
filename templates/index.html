@@ -10,39 +10,62 @@
 </head>
 <body>
     <div class="container-fluid py-4">
-        <div class="row g-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="mb-0">
+                <i class="bi bi-chat-dots me-2"></i>
+                Knowledge Base AI Chat
+            </h1>
+            <a href="{{ url_for('google_auth.logout') }}" class="btn btn-outline-primary">
+                <i class="bi bi-box-arrow-right me-2"></i>
+                Logout
+            </a>
+        </div>
+
+        <div class="row">
             <!-- File Upload Section -->
-            <div class="col-lg-4">
-                <div class="card upload-card">
-                    <div class="card-header border-0 bg-transparent pt-3 px-3">
-                        <h5 class="mb-0">
+            <div class="col-lg-4 mb-4 mb-lg-0">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title d-flex align-items-center">
                             <i class="bi bi-file-text me-2"></i>
                             Upload Document
                         </h5>
-                    </div>
-                    <div class="card-body px-3">
                         <div class="upload-zone mb-3" id="dropZone">
                             <input type="file" class="form-control" id="fileInput" accept=".txt,.pdf">
-                            <div class="upload-zone-content text-center">
-                                <p class="mb-2">Drag and drop your files here<br>or click to browse</p>
-                                <p class="text-muted small mb-0">Supported formats: PDF, TXT</p>
+                            <div class="upload-zone-content">
+                                <i class="bi bi-cloud-upload display-4"></i>
+                                <p class="mt-3">Drag and drop your files here<br>or click to browse</p>
+                                <p class="text-muted small">Supported formats: PDF, TXT</p>
+                                <div id="selectedFile" class="selected-file mt-2" style="display: none;">
+                                    <i class="bi bi-file-earmark-text me-2"></i>
+                                    <span></span>
+                                </div>
                             </div>
                         </div>
-
                         <div class="d-grid">
                             <button class="btn btn-primary" id="uploadBtn">
                                 <i class="bi bi-cloud-upload me-2"></i>
                                 Upload
                             </button>
                         </div>
-
-                        <div class="files-section mt-4">
-                            <h6 class="text-muted mb-3">
+                        <div class="mt-4">
+                            <h6 class="card-subtitle mb-3 text-muted">
                                 <i class="bi bi-files me-2"></i>
                                 Uploaded Files
                             </h6>
                             <div id="filesList" class="files-list">
-                                <!-- Files will be dynamically added here -->
+                                <div class="file-item">
+                                    <div class="file-info">
+                                        <i class="bi bi-file-text file-icon"></i>
+                                        <div class="file-details">
+                                            <p class="file-name">DeepSeek_R1_copy.pdf</p>
+                                            <p class="file-time">2/13/2025, 6:25:22 AM</p>
+                                        </div>
+                                    </div>
+                                    <button class="delete-btn" title="Delete file">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -51,16 +74,19 @@
 
             <!-- Chat Section -->
             <div class="col-lg-8">
-                <div class="card chat-card">
-                    <div class="card-header d-flex justify-content-between align-items-center border-0 bg-transparent pt-3 px-3">
-                        <h5 class="mb-0">Chat</h5>
-                        <button class="btn btn-outline-danger btn-sm" id="resetBtn">
-                            <i class="bi bi-trash me-2"></i>
-                            Reset Chat
-                        </button>
-                    </div>
-                    <div class="card-body px-3">
-                        <div class="chat-container mb-3" id="chatContainer">
+                <div class="card h-100">
+                    <div class="card-body d-flex flex-column">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-chat-square-text me-2"></i>
+                                Chat
+                            </h5>
+                            <button class="btn btn-outline-danger" id="resetBtn">
+                                <i class="bi bi-trash me-2"></i>
+                                Reset Chat
+                            </button>
+                        </div>
+                        <div class="chat-container flex-grow-1 mb-4" id="chatContainer">
                             <div class="message-list">
                                 <!-- Messages will be dynamically added here -->
                             </div>
@@ -72,7 +98,7 @@
                         </div>
 
                         <div class="input-group">
-                            <textarea class="form-control" id="messageInput" rows="1" 
+                            <textarea class="form-control" id="messageInput" rows="2" 
                                 placeholder="Type your message here..." 
                                 aria-label="Message input"></textarea>
                             <button class="btn btn-primary" type="button" id="sendBtn">
