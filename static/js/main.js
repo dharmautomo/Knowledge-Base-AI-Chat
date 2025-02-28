@@ -218,11 +218,10 @@ document.addEventListener('DOMContentLoaded', function() {
         avatar.className = 'message-avatar';
 
         if (role === 'assistant') {
-            const img = document.createElement('img');
-            img.src = '/static/images/logo-lucky-indah-keramik.png';
-            img.alt = 'Lucky Indah Keramik AI';
-            img.style.backgroundColor = 'transparent';
-            avatar.appendChild(img);
+            const icon = document.createElement('i');
+            icon.className = 'bi bi-book';
+            icon.style.color = '#C1A88B';
+            avatar.appendChild(icon);
         } else {
             // User avatar - using initials or icon
             const icon = document.createElement('i');
@@ -231,7 +230,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         const name = document.createElement('span');
-        name.textContent = role === 'user' ? 'You' : 'Lucky Indah Keramik AI';
+        name.textContent = role === 'user' ? 'You' : 'AI Assistant';
 
         header.appendChild(avatar);
         header.appendChild(name);
