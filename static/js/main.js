@@ -145,7 +145,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 throw new Error(errorData.error || 'Error uploading file');
             }
 
-            await response.json();
+            const responseData = await response.json();
             alert('File uploaded and processed successfully!');
 
             // Clear the UI after successful upload
